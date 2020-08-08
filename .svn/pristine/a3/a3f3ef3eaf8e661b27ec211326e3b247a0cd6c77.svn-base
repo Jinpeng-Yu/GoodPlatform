@@ -1,0 +1,60 @@
+package com.hitwh.shop.controller;
+
+import com.hitwh.shop.model.pojo.BasePageResult;
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.model.pojo.SpuSalesResult;
+import com.hitwh.shop.service.SellerService;
+import com.hitwh.shop.util.ConstUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpSession;
+import java.util.List;
+
+/**
+ * @ClassName SellerController
+ * @Description 卖家的功能接口
+ * @Author 于劲鹏
+ * @Date 2020/6/7 17:12
+ * @Version 1.0
+ **/
+@RestController
+@RequestMapping(ConstUtils.URL_SELLER)
+public class SellerController {
+    @Autowired
+    private SellerService sellerService;
+
+    @RequestMapping(value = ConstUtils.URL_GET_COMMODITY_ITEM_LIST, method = RequestMethod.GET)
+    public BaseResult<Object> getCommodityItemList() {
+        BaseResult<Object> result = new BaseResult<>();
+        sellerService.getCommodityItemList(result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_ORDER_ITEM_LIST, method = RequestMethod.GET)
+    public BaseResult<Object> getOrderItemList() {
+        BaseResult<Object> result = new BaseResult<>();
+        sellerService.getOrderItemList(result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_STORE_SPU_SALES, method = RequestMethod.GET)
+    public BaseResult<List<SpuSalesResult>> getStoreSPUSales(HttpSession session) {
+        BaseResult<List<SpuSalesResult>> result = new BaseResult<>();
+        sellerService.getStoreSPUSales(session, result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_ALL_SPUS, method = RequestMethod.GET)
+    public BasePageResult<Object> getAllSpus(HttpSession session, @RequestParam("pageNo") Integer pageNo, @RequestParam("pageSize") Integer pageSize) {
+        BasePageResult<Object> result = new BasePageResult<>();
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        sellerService.getAllSpus(session, result, pageable);
+        return result;
+    }
+}

@@ -1,0 +1,102 @@
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+import Login from '../pages/login/Login'
+import Public from '../pages/public/Public'
+import ShowSpu from '../pages/public/ShowSpu'
+import Parent from '../components/Parent'
+import Child from '../components/Child'
+import Register from '../pages/login/Register'
+import Forget from '../pages/login/Forget'
+import MerchantHome from '../pages/merchant/home/Index'
+import EchartsTest from '../pages/login/EchartsTest'
+import EchartsTestPie from '../pages/login/EchartsTestPie'
+import BuyerHome from '../pages/buyer/BuyerHome'
+import Information from '../pages/buyer/Information'
+import UserInfo from '../pages/buyer/UserInfo'
+import MyOrder from '../pages/buyer/MyOrder'
+import MyCollection from '../pages/buyer/MyCollection'
+import ShoppingCart from '../pages/buyer/ShoppingCart'
+
+Vue.use(VueRouter)
+
+const routes = [
+  // 初始页面为public
+  {
+    path: '/',
+    redirect: '/public'
+  },
+  {
+    path: '/public',
+    component: Public
+  },
+  {
+    path: '/login',
+    component: Login
+  },
+  {
+    path: '/register',
+    component: Register
+  },
+  {
+    path: '/forget',
+    component: Forget
+  },
+  {
+    path: '/showSpu',
+    component: ShowSpu
+  },
+  // 父子组件测试用
+  {
+    path: '/parent',
+    component: Parent
+  },
+  {
+    path: '/child',
+    component: Child
+  },
+  {
+    path: '/test',
+    component: EchartsTest
+  },
+  {
+    path: '/testpie',
+    component: EchartsTestPie
+  },
+
+  // 商户工作台
+  {
+    path: '/merchant',
+    component: MerchantHome
+  },
+  {
+    path: '/buyerhome',
+    component: BuyerHome,
+    children: [{
+      path: '/information',
+      component: Information
+    },
+    {
+      path: '/userinfo',
+      component: UserInfo
+    },
+    {
+      path: '/shoppingcart',
+      component: ShoppingCart
+    },
+    {
+      path: '/myorder',
+      component: MyOrder
+    },
+    {
+      path: '/mycollection',
+      component: MyCollection
+    }]
+  }
+]
+
+const router = new VueRouter({
+  mode: 'history',
+  routes
+})
+
+export default router

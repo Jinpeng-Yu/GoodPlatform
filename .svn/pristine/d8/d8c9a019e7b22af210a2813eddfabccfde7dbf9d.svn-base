@@ -1,0 +1,15 @@
+package com.hitwh.shop.service;
+
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.model.pojo.SpuSalesResult;
+
+import javax.servlet.http.HttpSession;
+import java.util.List;
+
+public interface SellerService {
+    public void getCommodityItemList(BaseResult<Object> result);
+
+    public void getOrderItemList(BaseResult<Object> result);
+
+    public void getStoreSPUSales(HttpSession session, BaseResult<List<SpuSalesResult>> result);
+}

@@ -1,0 +1,50 @@
+package com.hitwh.shop.dao;
+
+import com.hitwh.shop.model.entity.Sku;
+import com.hitwh.shop.model.entity.SkuAttribute;
+import com.hitwh.shop.model.pojo.OrderSkuSpuResult;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+
+//import javax.transaction.Transactional;
+import java.util.List;
+
+/**
+ * @ClassName RoleRepository
+ * @Description TODO
+ * @Author 苏嘉尧
+ * @Date 2019/6/16 11:57
+ * @Version 1.0
+ **/
+
+public interface SKURepository extends JpaRepository<Sku, Integer> {
+    List<Sku> findSkusBySpuId(Integer spuId);
+
+    Sku findSkuById(Integer skuId);
+
+    @Query(value = "select new com.hitwh.shop.model.entity.SkuAttribute(sa.id, sa.skuId, sa.attributeId, sa.state, sa.deleted) from Sku s, SkuAttribute sa " +
+            "where s.id = :skuId and s.id = sa.skuId and s.deleted = 0 and sa.deleted = 0")
+    SkuAttribute getAttributeIdBySkuId(@Param("skuId") Integer skuId);
+
+    //获得购买的单品
+    @Query(value = "select new com.hitwh.shop.model.entity.Sku(sk.id,sk.spuId,sk.price,sk.stock,sk.state,sk.deleted) " +
+            "from Sku sk, Spu sp, OrderSku os, Order o where sp.id = :spuId and o.userId = :userId and o.id = os.orderId and os.skuId = sk.id and sk.spuId = sp.id " +
+            "and sp.deleted = 0 and sk.deleted = 0 and os.deleted = 0 and o.deleted = 0")
+    List<Sku> getSkuByUserIdAndSpuId(@Param("userId") Integer userId,@Param("spuId") Integer spuId);
+
+    @Transactional // 等会添加一个skuid
+    @Query(value = "select new com.hitwh.shop.model.pojo.OrderSkuSpuResult(o.id, sp.name, os.number, sk.price, o.date, sk.id)" +
+        "from Order o,Sku sk,Spu sp,OrderSku os "+
+        "where o.userId = :userId and os.orderId = o.id and sk.id = os.skuId and sp.id = sk.spuId and o.deleted = 0")
+    List<OrderSkuSpuResult> findOrderByUserId(Integer userId);
+
+
+    @Transactional
+    @Modifying
+    @Query(value = "update Sku s set s.deleted = 1 where s.id = :skuId")
+    void deleteSkuById(Integer skuId);
+
+}

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+
+    <persistence-unit name="persistenceUnit">
+        <class>com.hitwh.shop.model.entity.Attribute</class>
+        <class>com.hitwh.shop.model.entity.AttributeType</class>
+        <class>com.hitwh.shop.model.entity.Collection</class>
+        <class>com.hitwh.shop.model.entity.Comment</class>
+        <class>com.hitwh.shop.model.entity.Order</class>
+        <class>com.hitwh.shop.model.entity.OrderSku</class>
+        <class>com.hitwh.shop.model.entity.Permission</class>
+        <class>com.hitwh.shop.model.entity.Role</class>
+        <class>com.hitwh.shop.model.entity.RolePermission</class>
+        <class>com.hitwh.shop.model.entity.Sku</class>
+        <class>com.hitwh.shop.model.entity.SkuAttribute</class>
+        <class>com.hitwh.shop.model.entity.Spu</class>
+        <class>com.hitwh.shop.model.entity.SpuType</class>
+        <class>com.hitwh.shop.model.entity.Store</class>
+        <class>com.hitwh.shop.model.entity.User</class>
+        <class>com.hitwh.shop.model.entity.UserRole</class>
+        <class>com.hitwh.shop.model.entity.UserSku</class>
+        <class>com.hitwh.shop.model.entity.Address</class>
+        <class>com.hitwh.shop.model.entity.City</class>
+        <class>com.hitwh.shop.model.entity.County</class>
+        <class>com.hitwh.shop.model.entity.Province</class>
+        <properties>
+            <property name="hibernate.connection.url"
+                      value="jdbc:mysql://101.201.197.212:3306/my_shopping?&amp;serverTimezone=Asia/Shanghai"/>
+            <property name="hibernate.connection.driver_class" value="com.mysql.cj.jdbc.Driver"/>
+        </properties>
+    </persistence-unit>
+</persistence>

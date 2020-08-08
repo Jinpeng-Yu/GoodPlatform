@@ -1,0 +1,111 @@
+<template>
+  <div class="login_container">
+    <div class="login_box">
+      <!--头像区域-->
+      <div class="avatar_box">
+        <img src="../../../assets/logo.png" alt="">
+      </div>
+      <div style="width: 650px">
+        <p class="login_title">登录</p>
+      </div>
+      <!--登录表单区-->
+      <el-form :model="loginForm" ref="loginFormRef" label-width="0px" :rules="loginFormRules" class="login_form">
+        <p style="font-size: 16px">用户名</p>
+        <el-form-item prop="username">
+          <el-input v-model="loginForm.username" prefix-icon="iconfont icon-user"></el-input>
+        </el-form-item>
+        <p style="font-size: 16px">密码</p>
+        <el-form-item prop="password">
+          <el-input type="password" v-model="loginForm.password" prefix-icon="iconfont icon-mima"></el-input>
+        </el-form-item>
+        <el-form-item class="btn_s">
+          <el-button type="primary" style="font-size: 18px" @click="adminlogin">登录</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      loginForm: {
+        username: 'admin',
+        password: ''
+      },
+      loginFormRules: {
+        username: [
+          { required: true, message: '请输入登录名称', trigger: 'blur' },
+          { min: 6, max: 15, message: '请输入6到15个字符', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入登录密码', trigger: 'blur' },
+          { min: 6, max: 18, message: '请输入8到18个字符', trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  methods: {
+    adminlogin () {
+      this.$refs.loginFormRef.validate((valid) => {
+        // if (!valid) return;
+        // this.$http.post("login",this.loginForm);
+      })
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+  .login_container{
+    background-color: #FFE1FF;
+    height: 100%;
+  }
+
+  .login_box{
+    width: 650px;
+    height: 450px;
+    background-color: #fff;
+    border-radius: 3px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .avatar_box{
+    height: 130px;
+    width: 130px;
+    border: 1px solid #eee;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 0 10px #ddd;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background-color: #fff;
+    img{
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: #eee;
+    }
+  }
+  .login_form{
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+  .btn_s{
+    display: flex;
+    justify-content: center;
+  }
+  .login_title {
+    text-align: center;
+    width: 100%;
+    margin-top: 90px;
+    font-size: 40px;
+  }
+</style>

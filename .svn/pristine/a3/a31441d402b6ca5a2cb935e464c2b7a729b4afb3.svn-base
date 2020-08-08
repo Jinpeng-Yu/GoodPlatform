@@ -1,0 +1,4 @@
+package com.hitwh.shop.service;
+
+public interface AdminService {
+}

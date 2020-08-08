@@ -1,0 +1,102 @@
+package com.hitwh.shop.service.impl;
+
+import com.hitwh.shop.dao.CollectionRepository;
+import com.hitwh.shop.dao.SPURepository;
+import com.hitwh.shop.dao.StoreRepository;
+import com.hitwh.shop.model.entity.Collection;
+import com.hitwh.shop.model.entity.Spu;
+import com.hitwh.shop.model.entity.Store;
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.model.pojo.CollectionColumn;
+import com.hitwh.shop.service.BuyerService;
+import com.hitwh.shop.util.ConstUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @ClassName BuyerServiceImpl
+ * @Description TODO
+ * @Author 孙一恒
+ * @Date 2020/6/1 17:22
+ * @Version 1.0
+ **/
+@Service
+public class BuyerServiceImpl implements BuyerService {
+    @Autowired
+    private CollectionRepository collectionRepository;
+
+    @Autowired
+    private SPURepository spuRepository;
+
+    @Autowired
+    private StoreRepository storeRepository;
+
+    //获取收藏夹的内容
+    @Override
+    public void getCollection(BaseResult result, Integer userId, HttpSession session) {
+        Integer currentId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        if(currentId == userId){//检查userId是否一致
+            List<Collection> collectionList = collectionRepository.findCollectionsByUserId(userId);
+            List<CollectionColumn> columns = new ArrayList<>();
+            if(!collectionList.isEmpty()){
+                for(Collection collection:collectionList){
+                    Spu currentGood = spuRepository.findSpuById(collection.getSpuId());
+                    Store currentStore = storeRepository.findStoreById(currentGood.getStoreId());
+                    CollectionColumn column = new CollectionColumn(collection.getId(),collection.getUserId(),collection.getSpuId(),currentGood.getStoreId(),currentStore.getDescription(),currentGood.getName(),
+                            currentGood.getImg(),collection.getDate(),collection.getState(),collection.getDeleted());
+                    columns.add(column);
+                }
+                result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, columns);
+            }else{
+                result.construct(true, ConstUtils.MSG_COLLECTION_NULL, null);
+            }
+        }else{//userId不一致提示访问错误
+            result.construct(false, ConstUtils.MSG_COLLECTION_ERROR, null);
+        }
+    }
+
+    //添加收藏
+    @Override
+    @Transactional
+    public void addCollection(BaseResult<Object> result, Integer userId, Integer spuId, HttpSession session){
+        Integer currentId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        if(currentId == userId){//检查userId是否一致
+            Spu currentSpu = spuRepository.findSpuById(spuId);
+            Collection currentCollection = collectionRepository.findCollectionBySpuIdAndUserId(spuId, userId);
+            if(currentSpu == null || currentCollection != null){//检查这个商品是否存在，以及检查收藏夹中是否含有这个商品
+                result.construct(false, ConstUtils.MSG_ADD_FAILED,null);
+            }else{//商品存在，且收藏夹中不包含
+                Collection collection = new Collection(userId,spuId,new Timestamp(System.currentTimeMillis()),0,0);
+                collectionRepository.save(collection);
+                result.construct(true, ConstUtils.MSG_ADD_SUCCESS, collection);
+            }
+        }else{//userId不一致提示访问错误
+            result.construct(false, ConstUtils.MSG_COLLECTION_ERROR, null);
+        }
+    }
+
+    //删除收藏
+    @Override
+    @Transactional
+    public void deleteCollection(BaseResult<Object> result, Integer userId, Integer spuId, HttpSession session) {
+        Integer currentId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        if(currentId == userId){//检查userId是否一致
+            Spu currentSpu = spuRepository.findSpuById(spuId);
+            Collection currentCollection = collectionRepository.findCollectionBySpuIdAndUserId(spuId, userId);
+            if(currentSpu == null || currentCollection == null){//检查这个商品是否存在，以及检查收藏夹中是否含有这个商品
+                result.construct(false, ConstUtils.MSG_DELETE_FAILED,null);
+            }else{//商品存在，且收藏夹中包含
+                collectionRepository.deleteById(currentCollection.getId());
+                result.construct(true, ConstUtils.MSG_DELETE_SUCCESS, currentCollection);
+            }
+        }else{//userId不一致提示访问错误
+            result.construct(false, ConstUtils.MSG_COLLECTION_ERROR, null);
+        }
+    }
+}

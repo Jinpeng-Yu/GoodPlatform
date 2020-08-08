@@ -1,0 +1,52 @@
+<template>
+<div>
+  <el-col :span="12">
+    <el-row><div><el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <span>消费类型分析</span>
+      </div>
+      <div class="text item">
+        <span>本月消费总额：</span>
+      </div>
+      <div class="text item">
+        <span>本月最大开销类型：</span>
+      </div>
+      <div class="text item">
+        <span>本月最大开销类型：</span>
+      </div>
+    </el-card></div></el-row>
+    <el-row><div class="grid-content bg-purple-light"></div></el-row>
+    <el-row><div><el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <span>消费类型分析</span>
+      </div>
+      <div class="text item">
+        <span>本月消费总额：</span>
+      </div>
+      <div class="text item">
+        <span>本月最大开销类型：</span>
+      </div>
+      <div class="text item">
+        <span>本月最大开销类型：</span>
+      </div>
+    </el-card></div></el-row>
+  </el-col>
+  <el-col :span="12">
+    <el-row><div class="grid-content bg-purple"><el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <span>消费类型分析图</span>
+      </div>
+      <div id="myChart" :style="{width: '500px', height: '500px'}"></div>
+    </el-card></div></el-row>
+  </el-col>
+</div>
+</template>
+
+<script>
+export default {
+}
+</script>
+
+<style scoped>
+
+</style>

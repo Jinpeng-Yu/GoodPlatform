@@ -1,0 +1,329 @@
+package com.hitwh.shop.service.impl;
+
+import com.hitwh.shop.dao.*;
+import com.hitwh.shop.model.entity.*;
+import com.hitwh.shop.model.pojo.*;
+import com.hitwh.shop.service.PublicService;
+import com.hitwh.shop.util.CommonUtils;
+import com.hitwh.shop.util.ConstUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+/**
+ * @ClassName PublicServiceImpl
+ * @Description TODO
+ * @Author 孙一恒
+ * @Date 2020/6/1 17:22
+ * @Version 1.0
+ **/
+@Service
+public class PublicServiceImpl implements PublicService {
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private MailService mailService;
+
+    @Autowired
+    private SPURepository spuRepository;
+
+    @Autowired
+    private SpuTypeRepository spuTypeRepository;
+
+    @Autowired
+    private SKURepository skuRepository;
+
+    @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
+    private AttributeRepository attributeRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+
+    @Override
+    public void sendVerifyMail(BaseResult<Object> result, String email, HttpSession session) {
+        // 邮箱不能重复注册
+        if (userRepository.findUserByEmail(email) != null) {
+            result.construct(false, ConstUtils.MSG_USED_EMAIL, null);
+            return;
+        }
+        // 尝试发送邮件
+        try {
+            String captcha = CommonUtils.getCaptcha();
+            mailService.sendMail(email, ConstUtils.VERIFY_MAIL_SUBJECT, captcha);
+            session.setAttribute(ConstUtils.SESSION_CAPTCHA, captcha);
+            session.setAttribute(ConstUtils.SESSION_EMAIL, email);
+        } catch (Exception e) {
+            result.construct(false, ConstUtils.MSG_SEND_FAILED, null);
+            e.printStackTrace();
+            return;
+        }
+        result.construct(true, ConstUtils.MSG_SEND_SUCCESS, null);
+    }
+
+    @Override
+    public void sendVerifyMailPW(BaseResult<Object> result, String email, HttpSession session) {
+        // 邮箱已注册
+        if (userRepository.findUserByEmail(email)== null) {
+            result.construct(false, ConstUtils.MSG_UNREGISTERED_EMAIL, null);
+            return;
+        }
+        // 尝试发送邮件
+        try {
+            String captchaPW = CommonUtils.getCaptcha();
+            mailService.sendMail(email, ConstUtils.VERIFY_MAIL_SUBJECT, captchaPW);
+            session.setAttribute(ConstUtils.SESSION_CAPTCHAPW, captchaPW);
+            session.setAttribute(ConstUtils.SESSION_EMAILPW, email);
+        } catch (Exception e) {
+            result.construct(false, ConstUtils.MSG_SEND_FAILED, null);
+            e.printStackTrace();
+            return;
+        }
+        result.construct(true, ConstUtils.MSG_SEND_SUCCESS, null);
+    }
+
+    @Override
+    public void forget(BaseResult<Object> result, String email, String captcha, HttpSession session){
+        if (session.getAttribute(ConstUtils.SESSION_CAPTCHAPW) == null) {//是否已经获取验证码
+            result.construct(false, ConstUtils.MSG_NO_CAPTCHA, null);
+            return;
+        }
+        if (!session.getAttribute(ConstUtils.SESSION_EMAILPW).equals(email)) {//输入的邮箱是否与获取验证码的邮箱一致
+            result.construct(false, ConstUtils.MSG_WRONG_EMAIL, null);
+            return;
+        }
+        if (!session.getAttribute(ConstUtils.SESSION_CAPTCHAPW).equals(captcha)) {//验证码是否正确
+            result.construct(false, ConstUtils.MSG_WRONG_CAPTCHA, null);
+            return;
+        }
+        if (userRepository.findUserByEmail(email) == null) {
+            result.construct(false, ConstUtils.MSG_USED_EMAIL, null);
+            return;
+        }
+        // 尝试发送邮件更改密码
+        try {
+            String forgetPassword = CommonUtils.getForgetPassword();
+            mailService.sendMail(email, ConstUtils.FORGETPASSWORD_MAIL_SUBJECT, forgetPassword);
+            User user = userRepository.findUserByEmail(email);
+            user.setPassword(forgetPassword);
+            userRepository.save(user);
+
+        } catch (Exception e) {
+            result.construct(false, ConstUtils.MSG_SEND_FAILED, null);
+            e.printStackTrace();
+            return;
+        }
+        result.construct(true, ConstUtils.MSG_SEND_SUCCESS, null);
+    }
+
+    @Override
+    @Transactional
+    public void register(BaseResult<Object> result, String username, String email, String password, String captcha, HttpSession session) {
+        // 一次校验 session是否存在，内容是否正确，用户名是否重复
+        if (session.getAttribute(ConstUtils.SESSION_CAPTCHA) == null) {//是否已经获取验证码
+            result.construct(false, ConstUtils.MSG_NO_CAPTCHA, null);
+            return;
+        }
+        if (!session.getAttribute(ConstUtils.SESSION_EMAIL).equals(email)) {//输入的邮箱是否与获取验证码的邮箱一致
+            result.construct(false, ConstUtils.MSG_WRONG_EMAIL, null);
+            return;
+        }
+        if (!session.getAttribute(ConstUtils.SESSION_CAPTCHA).equals(captcha)) {//验证码是否正确
+            result.construct(false, ConstUtils.MSG_WRONG_CAPTCHA, null);
+            return;
+        }
+        if (userRepository.findUserByUsername(username) != null) {//用户名是否已被占用
+            result.construct(false, ConstUtils.MSG_DUPLICATE_USERNAME, null);
+            return;
+        }
+
+        User user = new User(username, password, email, null, new Timestamp(System.currentTimeMillis()));
+        userRepository.save(user);
+        // 为用户添加买家的角色
+        Integer userId = user.getId();
+        userRoleRepository.save(new UserRole(userId, ConstUtils.ROLE_BUYER_ID));
+        result.construct(true, ConstUtils.MSG_REGISTER_SUCCESS, user);
+    }
+
+    @Override
+    public void login(BaseResult<LoginResult> result, String userName, String password, HttpSession session) {
+        User user = userRepository.findUserByUsernameAndPassword(userName, password);
+        // 用户名不存在 / 密码错误
+        if (user == null) {
+            result.construct(false, ConstUtils.MSG_LOGIN_FAILED, null);
+            return;
+        }
+        // 在session中记录当前用户的访问权限和当前用户的id
+        List<PermissionResult> permissionResultList = roleRepository.getPermissionByUserId(user.getId());
+        session.setAttribute(ConstUtils.SESSION_PERMISSION_LIST, permissionResultList);
+        session.setAttribute(ConstUtils.SESSION_USER_ID, user.getId());
+        List<Role> roleList = roleRepository.getRolesByUserId(user.getId());
+        LoginResult loginResult = new LoginResult(user.getId(), user.getUsername(), roleList);
+        result.construct(true, ConstUtils.MSG_LOGIN_SUCCESS, loginResult);
+    }
+
+    //获取所有商品
+    @Override
+    public void showAllSPU(BasePageResult<Object> result, Pageable pageable) {
+        Page<Spu> spuList = spuRepository.findSpusByPageByDeleted(pageable, 0);
+        if (!spuList.isEmpty()) {
+            result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, null, spuList);
+        } else {
+            result.construct(true, ConstUtils.MSG_SEARCH_SPU_NULL, null, spuList);
+        }
+    }
+
+    //根据商品名称对商品进行模糊查询
+    @Override
+    public void searchSPUByName(BasePageResult result, String goodName, Pageable pageable) {
+        if (goodName == null) {
+            result.construct(false, ConstUtils.MSG_INPUT_NULL, null, null);
+        } else {
+            Page<Spu> queryResult = spuRepository.findSpusByPageByName(pageable, "%" + goodName + "%");
+            if (!queryResult.isEmpty()) {
+                result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, null, queryResult);
+            } else {
+                result.construct(true, ConstUtils.MSG_SEARCH_SPU_NULL, null, queryResult);
+            }
+        }
+    }
+
+    //根据商品类别对商品进行查询
+    @Override
+    public void searchSPUByType(BasePageResult result, String goodType, Pageable pageable) {
+        Page<Spu> queryResult = spuRepository.findSpusByPageByType(pageable, goodType);
+        if (!queryResult.isEmpty()) {
+            result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, null, queryResult);
+        } else {
+            result.construct(true, ConstUtils.MSG_SEARCH_SPU_NULL, null, queryResult);
+        }
+    }
+
+    //获取所有商品类型
+    @Override
+    public void showSPUType(BaseResult<Object> result) {
+        List<SpuType> spuTypeList = spuTypeRepository.findSpuTypesByDeleted(0);
+        if (!spuTypeList.isEmpty()) {
+            result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, spuTypeList);
+        } else {
+            result.construct(false, ConstUtils.MSG_SPU_TYPE_NULL, spuTypeList);
+        }
+    }
+
+    //显示一个商品的页面
+    @Override
+    public void showSPU(BaseResult<SPUResultForBuyer> result, Integer spuId) {
+        Spu currentSpu = spuRepository.findSpuById(spuId);
+        if(currentSpu == null){
+            result.construct(false, ConstUtils.MSG_SPU_NOT_EXIST, null);
+        }else{
+            SPUResultForBuyer  spuResultForBuyer = new SPUResultForBuyer();
+
+            spuResultForBuyer.setSpuId(spuId);
+            spuResultForBuyer.setName(currentSpu.getName());
+            spuResultForBuyer.setImg(currentSpu.getImg());
+            spuResultForBuyer.setDescription(currentSpu.getDescription());
+            spuResultForBuyer.setStoreId(currentSpu.getStoreId());
+            Store currentStore = storeRepository.findStoreById(currentSpu.getStoreId());
+            spuResultForBuyer.setStoreDescription(currentStore.getDescription());
+
+            /*
+            主要思路：
+            先获取所有的属性类型，遍历属性类型得到各个对应的属性列表
+            */
+
+            List<AttributeType> attributeTypeList = attributeRepository.findAttributeTypesBySpuId(spuId);//
+            if(!attributeTypeList.isEmpty()){
+                HashMap<String , List<Attribute>> attributeMap = new HashMap<String , List<Attribute>>();
+                for(AttributeType currentAttributeType:attributeTypeList){
+                    List<Attribute> attributeList = attributeRepository.findAttributesByAttributeTypeId(currentAttributeType.getId());
+                    if(!attributeList.isEmpty()){
+                        attributeMap.put(currentAttributeType.getName(), attributeList);
+                    }else{
+                        result.construct(false, ConstUtils.MSG_SEARCH_ATTRIBUTE_NULL, spuResultForBuyer);
+                    }
+                }
+                spuResultForBuyer.setAttributeList(attributeMap);
+
+                /*
+                主要思路：
+                获得每一个单品sku的相应信息，用attributeHashMap存放<属性类型,属性>的键值对列表
+                */
+
+                List<Sku> skuList = skuRepository.findSkusBySpuId(spuId);
+                List<SkuResult> skuResultList = new ArrayList<>();
+                if(!skuList.isEmpty()){
+                    for(Sku currentSku :skuList){
+                        HashMap<String,Attribute> attributeHashMap= new HashMap<>();
+                        for(AttributeType currentAttributeType:attributeTypeList){
+                            Attribute attribute = attributeRepository.findAttributeBySkuIdAndAttributeTypeId(currentSku.getId(),currentAttributeType.getId());
+                            attributeHashMap.put(currentAttributeType.getName(), attribute);
+                        }
+                        SkuResult skuResult = new SkuResult(currentSku.getId(),spuId,currentSku.getPrice(),currentSku.getStock(),attributeHashMap);
+                        skuResultList.add(skuResult);
+                    }
+                    spuResultForBuyer.setSkuResultList(skuResultList);
+                }else{
+                    result.construct(false, ConstUtils.MSG_SEARCH_SKU_NULL, spuResultForBuyer);
+                }
+                result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, spuResultForBuyer);
+            }else{
+                result.construct(false, ConstUtils.MSG_SEARCH_SPU_ATTRIBUTE_TYPE_NULL, spuResultForBuyer);
+            }
+        }
+    }
+
+    @Override
+    public void showSpuComment(BaseResult<Object> result, Integer spuId) {
+        List<Comment> commentList = commentRepository.findCommentsBySpuId(spuId);
+        if(commentList.isEmpty()){
+            result.construct(true, ConstUtils.MSG_SPU_COMMENT_NULL, null);
+        }else{
+            List<CommentColumn> commentColumns = new ArrayList<>();
+            for(Comment currentComment: commentList){
+                CommentColumn column = new CommentColumn();
+                User user = userRepository.findUserById(currentComment.getUserId());
+                column.setUserId(user.getId());
+                column.setUsername(user.getUsername());
+                column.setHeadImg(user.getHeadImg());
+
+                column.setSpuId(spuId);
+
+                column.setCommentId(currentComment.getId());
+                column.setSkuId(currentComment.getSkuId());
+                column.setGrade(currentComment.getGrade());
+                column.setContent(currentComment.getContent());
+                column.setDate(currentComment.getDate());
+
+                List<AttributeType> attributeTypeList = attributeRepository.findAttributeTypesBySpuId(spuId);
+                HashMap<String,String> map = new HashMap<>();
+                for(AttributeType attributeType:attributeTypeList){
+                    Attribute attribute = attributeRepository.findAttributeBySkuIdAndAttributeTypeId(currentComment.getSkuId(),attributeType.getId());
+                    map.put(attributeType.getName(),attribute.getName());
+                }
+                column.setAttribute(map);
+
+                commentColumns.add(column);
+            }
+            result.construct(true, ConstUtils.MSG_QUERY_SUCCESS,commentColumns);
+        }
+    }
+}

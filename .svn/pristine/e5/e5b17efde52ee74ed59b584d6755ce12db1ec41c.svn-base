@@ -1,0 +1,69 @@
+<template>
+  <el-menu
+    default-active="2"
+    class="el-menu-vertical-demo"
+    @open="handleOpen"
+    @close="handleClose"
+    background-color="#333744"
+    text-color="#fff"
+    active-text-color="#ffd04b">
+    <el-submenu index="1">
+      <template slot="title">
+        <span>分类</span>
+      </template>
+      <el-menu-item-group>
+        <el-menu-item v-for="(spuType,index) in spuTypeList" :key="index" :index="index"
+                      @click="getSpuByType(spuType.name)">{{spuType.name}}
+        </el-menu-item>
+      </el-menu-item-group>
+    </el-submenu>
+  </el-menu>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      spuTypeList: [],
+      allSpuList: [],
+      currentPage: 1,
+      pageSize: 4
+    }
+  },
+  created () {
+    this.getSpuTypeList()
+  },
+  methods: {
+    getSpuTypeList () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showSPUType'
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.spuTypeList = response.data.data
+        // console.log(this.spuTypeList)
+      })
+    },
+    getSpuByType (goodType) {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/searchSPUByType',
+        params: { pageNo: this.currentPage - 1, pageSize: this.pageSize, goodType: goodType }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.allSpuList = response.data.content
+        // 向父组件传递数据
+        this.$emit('Type', { allSpuList: this.allSpuList })
+      })
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

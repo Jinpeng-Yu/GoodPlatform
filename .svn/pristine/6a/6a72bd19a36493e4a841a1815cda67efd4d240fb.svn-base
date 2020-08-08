@@ -1,0 +1,93 @@
+package com.hitwh.shop.controller;
+
+import com.hitwh.shop.dao.SPURepository;
+import com.hitwh.shop.dao.SpuTypeRepository;
+import com.hitwh.shop.dao.StoreRepository;
+import com.hitwh.shop.model.entity.Spu;
+//import com.hitwh.shop.model.pojo.AddSpuResult;
+import com.hitwh.shop.model.pojo.AddSpuResult;
+import com.hitwh.shop.model.pojo.BasePageResult;
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.model.pojo.SpuSalesResult;
+import com.hitwh.shop.service.SellerService;
+import com.hitwh.shop.util.ConstUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpSession;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+/**
+ * @ClassName SellerController
+ * @Description 卖家的功能接口
+ * @Author 于劲鹏
+ * @Date 2020/6/7 17:12
+ * @Version 1.0
+ **/
+@RestController
+@RequestMapping(ConstUtils.URL_SELLER)
+public class SellerController {
+    @Autowired
+    private SellerService sellerService;
+
+    @RequestMapping(value = ConstUtils.URL_GET_COMMODITY_ITEM_LIST, method = RequestMethod.GET)
+    public BaseResult<Object> getCommodityItemList() {
+        BaseResult<Object> result = new BaseResult<>();
+        sellerService.getCommodityItemList(result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_ORDER_ITEM_LIST, method = RequestMethod.GET)
+    public BaseResult<Object> getOrderItemList() {
+        BaseResult<Object> result = new BaseResult<>();
+        sellerService.getOrderItemList(result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_STORE_SPU_SALES, method = RequestMethod.GET)
+    public BaseResult<List<SpuSalesResult>> getStoreSPUSales(HttpSession session) {
+        BaseResult<List<SpuSalesResult>> result = new BaseResult<>();
+        sellerService.getStoreSPUSales(session, result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_ALL_SPUS, method = RequestMethod.GET)
+    public BasePageResult<Object> getAllSpus(HttpSession session, @RequestParam("query") String query, @RequestParam("pageNo") Integer pageNo, @RequestParam("pageSize") Integer pageSize) {
+        BasePageResult<Object> result = new BasePageResult<>();
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        sellerService.getAllSpus(session, query, result, pageable);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_DELETE_SPU_BY_ID, method = RequestMethod.POST)
+    public BaseResult<Object> deleteSpuById(HttpSession session, @RequestParam("id") Integer spuId) {
+        BaseResult<Object> result = new BaseResult<>();
+        sellerService.deleteSpuById(session, spuId, result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_CATEGORIES, method = RequestMethod.POST)
+    public BaseResult<Object> getCategories() {
+        BaseResult<Object> result = new BaseResult<>();
+        sellerService.getCategories(result);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_ADD_GOODS, method = RequestMethod.POST)
+    public BaseResult<Object> addGoods(HttpSession session, @RequestBody AddSpuResult addSpuResult) {
+        BaseResult<Object> result = new BasePageResult<>();
+        sellerService.addGoods(session,result,addSpuResult);
+        return result;
+    }
+
+    @RequestMapping(value = ConstUtils.URL_GET_ALL_ORDERS, method = RequestMethod.GET)
+    public BasePageResult<Object> getAllOrders(HttpSession session, @RequestParam("query") String query, @RequestParam("pageNo") Integer pageNo, @RequestParam("pageSize") Integer pageSize) {
+        BasePageResult<Object> result = new BasePageResult<>();
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        sellerService.getAllOrders(session, query, result, pageable);
+        return result;
+    }
+}

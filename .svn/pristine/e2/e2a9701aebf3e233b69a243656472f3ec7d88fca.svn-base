@@ -1,0 +1,51 @@
+spring:
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://101.201.197.212:3306/my_shopping?&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    type: com.zaxxer.hikari.HikariDataSource
+
+    hikari:
+      connection-test-query: SELECT 1 FROM DUAL
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      max-lifetime: 1800000
+      minimum-idle: 3
+
+  # 邮件配置
+  mail:
+    default-encoding: UTF-8
+    host: smtp.163.com
+    username: werun_backend@163.com
+    password: syhjzy6
+    properties:
+      mail:
+        smtp:
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            port: 465
+  # jpa配置
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    open-in-view: true
+
+#端口设置
+server:
+  port: 8787
+  #设置项目路径
+  servlet:
+    context-path: /myshopping
+    session:
+      # 设置session过期时间为1小时
+      timeout: 60m
+
+#分页工具设置
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  pageSizeZero: true
+  params: count=countSql

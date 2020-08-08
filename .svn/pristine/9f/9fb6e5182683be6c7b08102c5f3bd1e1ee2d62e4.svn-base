@@ -1,0 +1,182 @@
+<template>
+  <el-container class="home-container">
+    <!--  头部区域  -->
+    <el-header>
+      <Head @Name="getSpuByName"></Head>
+    </el-header>
+    <!--    页面主体区域-->
+    <el-container>
+      <!--      侧边栏-->
+      <el-aside width="200px">
+        <!-- 侧边栏菜单区域 -->
+        <Navigation @Type="getSpuByType"></Navigation>
+      </el-aside>
+      <!--      显示区域-->
+      <el-main>
+        <el-row type="flex" justify="space-around" class="row-bg">
+          <el-col :span="12">
+            <el-image v-bind:src=img style="width: 300px; height: 250px" :fit="fill"></el-image>
+          </el-col>
+          <el-col :span="12">
+            <h2>{{price}}&yen;</h2>
+            <h3>{{name}}</h3>
+            <span>{{description}}</span>
+            <el-divider></el-divider>
+            <el-row>
+              <span>商品种类</span>
+              <div style="margin-top: 20px" v-for="(attribute, attributeTyoe,index) in attributeList"
+                   :key="attributeTyoe">
+                <el-row>
+                  <span>{{attributeTyoe}}</span>
+                  <el-radio-group v-model="radioList[index]" @change="histTypeUpdate">
+                    <el-radio-button :label="one.name" v-for="one in attribute" :key="one.id"></el-radio-button>
+                  </el-radio-group>
+                </el-row>
+              </div>
+            </el-row>
+            <el-divider></el-divider>
+            <el-row>
+              <span>收藏本商品</span>
+              <el-button type="warning" icon="el-icon-star-off" circle></el-button>
+            </el-row>
+            <el-row>
+              <span>店铺：</span>
+              <el-link :underline="false" type="primary">{{storeName}}</el-link>
+            </el-row>
+          </el-col>
+        </el-row>
+        <el-row>
+          <span>商品评论</span>
+        </el-row>
+
+        <el-row v-for="(comment,index) in commentList" :key="index">
+          <el-divider></el-divider>
+          <el-row type="flex" class="row-bg">
+            <el-col :span="4">
+              <el-image v-bind:src=comment.headImg style="width: 30px; height: 25px" :fit="fill"></el-image>
+              <span>{{comment.username}}</span>
+            </el-col>
+            <el-col :span="8">
+              <el-rate
+                v-model= "comment.grade"
+                disabled
+                show-score
+                text-color="#ff9900"
+                score-template="{value}">
+              </el-rate>
+              <time class="time">{{ comment.date| dateFormat}}</time>
+              <p>{{comment.content}}</p>
+            </el-col>
+            <el-col :span="4">
+              <el-tag  v-for="(attribute, key) in comment.attribute"
+                       :key="key"
+                       type=''
+                       effect="plain">
+                {{key}}:{{attribute}}
+              </el-tag>
+            </el-col>
+          </el-row>
+        </el-row>
+      </el-main>
+    </el-container>
+  </el-container>
+</template>
+
+<script>
+import Navigation from '../../components/Navigation'
+import Head from '../../components/Head'
+
+export default {
+  components: { Navigation, Head },
+  name: 'ShowSpu',
+  data () {
+    return {
+      spuId: this.$router.history.current.query.spuId,
+      img: '',
+      name: '',
+      description: '',
+      storeName: '',
+      radioList: [],
+      price: 0,
+      attributeList: [],
+      list: [],
+      commentList: []
+    }
+  },
+  created () {
+    this.getSpu()
+    this.getCommentList()
+  },
+  methods: {
+    getSpu () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showSPU',
+        params: { spuId: this.spuId }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.img = response.data.data.img
+        this.name = response.data.data.name
+        this.description = response.data.data.description
+        this.storeName = response.data.data.storeDescription
+        this.attributeList = response.data.data.attributeList
+        for (var key in this.attributeList) {
+          this.list = this.attributeList[key]
+          this.radioList.push(this.list[0])
+        }
+        // console.log(this.radioList)
+      })
+    },
+    histTypeUpdate: function (histType) {
+      console.log('========histType===' + histType)
+    },
+    getCommentList () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showSPUComment',
+        params: { spuId: this.spuId }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.commentList = response.data.data
+        // console.log(this.commentList)
+      })
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+  .el-header {
+    background-color: #373d41;
+  }
+
+  .el-aside {
+    background-color: #333744;
+  }
+
+  .el-main {
+    background-color: #eaedf1;
+    display: flow;
+  }
+
+  .home-container {
+    height: 100%;
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  }
+
+  .el-row {
+    margin-bottom: 10px;
+
+    &:first-child {
+      margin-bottom: 20px;
+    }
+  }
+
+  .row-bg {
+    padding: 10px 0;
+  }
+</style>

@@ -1,0 +1,25 @@
+package com.hitwh.shop.dao;
+
+import com.hitwh.shop.model.entity.Sku;
+import com.hitwh.shop.model.entity.SkuAttribute;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+/**
+ * @ClassName RoleRepository
+ * @Description TODO
+ * @Author 苏嘉尧
+ * @Date 2019/6/16 11:57
+ * @Version 1.0
+ **/
+
+public interface SKURepository extends JpaRepository<Sku, Integer> {
+    List<Sku> findSkusBySpuId(Integer spuId);
+
+    @Query(value = "select new com.hitwh.shop.model.entity.SkuAttribute(sa.id, sa.skuId, sa.attributeId, sa.state, sa.deleted) from Sku s, SkuAttribute sa " +
+            "where s.id = :skuId and s.id = sa.skuId and s.deleted = 0 and sa.deleted = 0")
+    SkuAttribute getAttributeIdBySkuId(@Param("skuId") Integer skuId);
+}

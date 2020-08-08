@@ -1,0 +1,22 @@
+<template>
+    <div>
+      购物车
+      <div>
+        <el-row>
+          <el-col :span="12"><div class="user-box">
+          </div></el-col>
+          <el-col :span="12"><div class="order-box">
+          </div></el-col>
+        </el-row>
+      </div>
+    </div>
+</template>
+
+<script>
+export default {
+}
+</script>
+
+<style scoped>
+
+</style>

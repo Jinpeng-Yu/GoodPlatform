@@ -1,0 +1,134 @@
+package com.hitwh.shop.model.entity;
+
+import javax.persistence.*;
+import java.math.BigDecimal;
+import java.util.Objects;
+
+/**
+ * @ClassName Sku
+ * @Description TODO
+ * @Author 孙一恒
+ * @Date 2020/6/1 18:16
+ * @Version 1.0
+ **/
+@Entity
+public class Sku {
+    private Integer id;
+    private Integer spuId;
+    private BigDecimal price;
+    private Integer stock;
+    private Integer state;
+    private Integer deleted;
+
+    public Sku(){
+
+    }
+
+    public Sku(Integer id, Integer spuId, BigDecimal price, Integer stock, Integer state, Integer deleted) {
+        this.id = id;
+        this.spuId = spuId;
+        this.price = price;
+        this.stock = stock;
+        this.state = state;
+        this.deleted = deleted;
+    }
+
+    public Sku(Integer spuId, BigDecimal price, Integer stock) {
+        this.spuId = spuId;
+        this.price = price;
+        this.stock = stock;
+        this.state = 0;
+        this.deleted = 0;
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    @Basic
+    @Column(name = "spu_id")
+    public Integer getSpuId() {
+        return spuId;
+    }
+
+    public void setSpuId(Integer spuId) {
+        this.spuId = spuId;
+    }
+
+    @Basic
+    @Column(name = "price")
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    @Basic
+    @Column(name = "stock")
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    @Basic
+    @Column(name = "state")
+    public Integer getState() {
+        return state;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
+    }
+
+    @Basic
+    @Column(name = "deleted")
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Sku sku = (Sku) o;
+        return Objects.equals(id, sku.id) &&
+                Objects.equals(spuId, sku.spuId) &&
+                Objects.equals(price, sku.price) &&
+                Objects.equals(stock, sku.stock) &&
+                Objects.equals(state, sku.state) &&
+                Objects.equals(deleted, sku.deleted);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, spuId, price, stock, state, deleted);
+    }
+
+    @Override
+    public String toString() {
+        return "Sku{" +
+                "id=" + id +
+                ", spuId=" + spuId +
+                ", price=" + price +
+                ", stock=" + stock +
+                ", state=" + state +
+                ", deleted=" + deleted +
+                '}';
+    }
+}

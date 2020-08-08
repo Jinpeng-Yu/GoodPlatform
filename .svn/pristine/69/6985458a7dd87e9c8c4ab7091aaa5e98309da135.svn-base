@@ -1,0 +1,9 @@
+package com.hitwh.shop.service;
+
+import com.hitwh.shop.model.pojo.BaseResult;
+
+public interface SellerService {
+    public void getCommodityItemList(BaseResult<Object> result);
+
+    public void getOrderItemList(BaseResult<Object> result);
+}

@@ -1,0 +1,94 @@
+<template>
+  <el-menu default-active="2"
+           class="el-menu-vertical-demo"
+           @open="handleOpen"
+           @close="handleClose"
+           background-color="#333744"
+           text-color="#fff"
+           active-text-color="#ffd04b">
+    <el-submenu index="1">
+      <template slot="title">
+        <span>商品</span>
+      </template>
+      <el-menu-item-group>
+        <el-menu-item v-for="(commodityItem,index) in commodityItemList" :key="index" :index="index"
+                      @click="getCommodityItemByName(commodityItem)">
+          {{commodityItem}}
+        </el-menu-item>
+      </el-menu-item-group>
+    </el-submenu>
+    <el-submenu index="2">
+      <template slot="title">
+        <span>订单</span>
+      </template>
+      <el-menu-item-group>
+        <el-menu-item v-for="(orderItem,index) in orderItemList" :key="index" :index="index"
+                      @click="getOrderItemByName(orderItem)">
+          {{orderItem}}
+        </el-menu-item>
+      </el-menu-item-group>
+    </el-submenu>
+  </el-menu>
+</template>
+
+<script>
+export default {
+  name: 'SideBar',
+  data () {
+    return {
+      commodityItemList: [],
+      orderItemList: []
+    }
+  },
+  created () {
+    this.getCommodityItemList()
+    this.getOrderItemList()
+  },
+  methods: {
+    getCommodityItemList () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/test/getCommodityItemList'
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取商品项目列表失败！')
+        }
+        this.commodityItemList = response.data.data
+        // console.log(response.data.data)
+      })
+    },
+    getOrderItemList () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/test/getOrderItemList'
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取订单项目列表失败！')
+        }
+        this.orderItemList = response.data.data
+      })
+    },
+    getCommodityItemByName (commodityItemName) {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showAllSPU',
+        params: this.queryAllSPU
+        // 另一种方法 params: { pageNo: 0, pageSize: 5}
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.allSpuList = response.data.content
+        // console.log(response.data.success)
+      })
+    },
+    getOrderItemByName (orderItemName) {
+
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

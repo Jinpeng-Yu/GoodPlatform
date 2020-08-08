@@ -1,0 +1,50 @@
+package com.hitwh.shop.service.impl;
+
+import com.hitwh.shop.dao.UserRepository;
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.model.pojo.SpuSalesResult;
+import com.hitwh.shop.service.SellerService;
+import com.hitwh.shop.util.ConstUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @ClassName SellerServiceImpl
+ * @Description TODO
+ * @Author 于劲鹏
+ * @Date 2020/6/1 17:23
+ * @Version 1.0
+ **/
+@Service
+public class SellerServiceImpl implements SellerService {
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public void getCommodityItemList(BaseResult<Object> result) {
+        List<String> commodityItemList = new ArrayList<String>();
+        commodityItemList.add("商品列表");
+        commodityItemList.add("添加商品");
+        result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, commodityItemList);
+    }
+
+    @Override
+    public void getOrderItemList(BaseResult<Object> result) {
+        List<String> orderItemList = new ArrayList<String>();
+        orderItemList.add("订单列表");
+        orderItemList.add("退货申请处理");
+        result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, orderItemList);
+    }
+
+    @Override
+    public void getStoreSPUSales(HttpSession session, BaseResult<List<SpuSalesResult>> result) {
+        Integer userId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        List<SpuSalesResult> data = userRepository.getSpuSalesByUserId(userId);
+        result.construct(true, ConstUtils.MSG_SUCCESS, data);
+    }
+}

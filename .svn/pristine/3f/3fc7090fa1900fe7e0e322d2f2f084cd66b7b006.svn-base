@@ -1,0 +1,69 @@
+import Vue from 'vue'
+import {
+  Button,
+  Container,
+  Header,
+  Aside,
+  Main,
+  Row,
+  Col,
+  Card,
+  Image,
+  Input,
+  Menu,
+  Submenu,
+  MenuItemGroup,
+  MenuItem,
+  Divider,
+  Link,
+  RadioButton,
+  RadioGroup,
+  Radio,
+  Rate,
+  Tag,
+  Form,
+  FormItem,
+  Message,
+  Carousel,
+  CarouselItem,
+  DatePicker,
+  PageHeader,
+  Select,
+  Option,
+  Upload,
+  InputNumber
+} from 'element-ui'
+
+Vue.use(Button)
+Vue.use(Container)
+Vue.use(Header)
+Vue.use(Aside)
+Vue.use(Main)
+Vue.use(Row)
+Vue.use(Col)
+Vue.use(Card)
+Vue.use(Image)
+Vue.use(Input)
+Vue.use(Menu)
+Vue.use(Submenu)
+Vue.use(MenuItem)
+Vue.use(MenuItemGroup)
+Vue.use(FormItem)
+Vue.use(Form)
+Vue.use(Link)
+Vue.use(Divider)
+Vue.use(Link)
+Vue.use(RadioGroup)
+Vue.use(RadioButton)
+Vue.use(Rate)
+Vue.use(Tag)
+Vue.use(Radio)
+Vue.use(CarouselItem)
+Vue.use(Carousel)
+Vue.use(DatePicker)
+Vue.use(PageHeader)
+Vue.use(Select)
+Vue.use(Option)
+Vue.use(Upload)
+Vue.use(InputNumber)
+Vue.prototype.$message = Message

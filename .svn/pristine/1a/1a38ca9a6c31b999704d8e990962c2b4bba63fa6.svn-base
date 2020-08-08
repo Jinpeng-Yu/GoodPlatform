@@ -1,0 +1,242 @@
+package com.hitwh.shop.service.impl;
+
+import com.hitwh.shop.dao.*;
+import com.hitwh.shop.model.entity.*;
+import com.hitwh.shop.model.pojo.*;
+import com.hitwh.shop.service.BuyerService;
+import com.hitwh.shop.util.ConstUtils;
+import com.hitwh.shop.util.TimeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @ClassName BuyerServiceImpl
+ * @Description TODO
+ * @Author 孙一恒
+ * @Date 2020/6/1 17:22
+ * @Version 1.0
+ **/
+@Service
+public class BuyerServiceImpl implements BuyerService {
+    @Autowired
+    private CollectionRepository collectionRepository;
+
+    @Autowired
+    private SPURepository spuRepository;
+
+    @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private  SKURepository skuRepository;
+
+    @Autowired
+    private ShoppingCartRepository shoppingCartRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
+
+    @Autowired
+    private ProvinceRepository provinceRepository;
+
+    @Autowired
+    private CityRepository cityRepository;
+
+    @Autowired
+    private CountyRepository countyRepository;
+    //获取收藏夹的内容
+    @Override
+    public void getCollection(BaseResult result, Integer userId, HttpSession session) {
+        Integer currentId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        if(currentId == userId){//检查userId是否一致
+            List<Collection> collectionList = collectionRepository.findCollectionsByUserId(userId);
+            List<CollectionColumn> columns = new ArrayList<>();
+            if(!collectionList.isEmpty()){
+                for(Collection collection:collectionList){
+                    Spu currentGood = spuRepository.findSpuById(collection.getSpuId());
+                    Store currentStore = storeRepository.findStoreById(currentGood.getStoreId());
+                    CollectionColumn column = new CollectionColumn(collection.getId(),collection.getUserId(),collection.getSpuId(),currentGood.getStoreId(),currentStore.getDescription(),currentGood.getName(),
+                            currentGood.getImg(),collection.getDate(),collection.getState(),collection.getDeleted());
+                    columns.add(column);
+                }
+                result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, columns);
+            }else{
+                result.construct(true, ConstUtils.MSG_COLLECTION_NULL, null);
+            }
+        }else{//userId不一致提示访问错误
+            result.construct(false, ConstUtils.MSG_COLLECTION_ERROR, null);
+        }
+    }
+
+    //添加收藏
+    @Override
+    @Transactional
+    public void addCollection(BaseResult<Object> result, Integer userId, Integer spuId, HttpSession session){
+        Integer currentId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        if(currentId == userId){//检查userId是否一致
+            Spu currentSpu = spuRepository.findSpuById(spuId);
+            Collection currentCollection = collectionRepository.findCollectionBySpuIdAndUserId(spuId, userId);
+            if(currentSpu == null || currentCollection != null){//检查这个商品是否存在，以及检查收藏夹中是否含有这个商品
+                result.construct(false, ConstUtils.MSG_ADD_FAILED,null);
+            }else{//商品存在，且收藏夹中不包含
+                Collection collection = new Collection(userId,spuId,new Timestamp(System.currentTimeMillis()),0,0);
+                collectionRepository.save(collection);
+                result.construct(true, ConstUtils.MSG_ADD_SUCCESS, collection);
+            }
+        }else{//userId不一致提示访问错误
+            result.construct(false, ConstUtils.MSG_COLLECTION_ERROR, null);
+        }
+    }
+
+    //删除收藏
+    @Override
+    @Transactional
+    public void deleteCollection(BaseResult<Object> result, Integer userId, Integer spuId, HttpSession session) {
+        Integer currentId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        if(currentId == userId){//检查userId是否一致
+            Spu currentSpu = spuRepository.findSpuById(spuId);
+            Collection currentCollection = collectionRepository.findCollectionBySpuIdAndUserId(spuId, userId);
+            if(currentSpu == null || currentCollection == null){//检查这个商品是否存在，以及检查收藏夹中是否含有这个商品
+                result.construct(false, ConstUtils.MSG_DELETE_FAILED,null);
+            }else{//商品存在，且收藏夹中包含
+                collectionRepository.deleteById(currentCollection.getId());
+                result.construct(true, ConstUtils.MSG_DELETE_SUCCESS, currentCollection);
+            }
+        }else{//userId不一致提示访问错误
+            result.construct(false, ConstUtils.MSG_COLLECTION_ERROR, null);
+        }
+    }
+
+    //添加购物车
+    @Override
+    @Transactional
+    public void addShoppingCart(BaseResult<Object> result, Integer userId, Integer skuId, Integer number, HttpSession session) {
+        Integer currentId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        if(currentId == userId){//检查userId是否一致
+            Sku currentSku = skuRepository.findSkuById(skuId);
+            UserSku currentShoppingCartColumn = shoppingCartRepository.findCollectionBySkuIdAndUserId(skuId, userId);
+            if(currentSku == null || currentShoppingCartColumn != null){//检查这个单品是否存在，以及检查购物车中是否含有这个单品
+                result.construct(false, ConstUtils.MSG_ADD_FAILED,null);
+            }else{//单品存在，且购物车中不包含
+                UserSku shoppingCartColumn = new UserSku(userId,skuId,number,0,0);
+                shoppingCartRepository.save(shoppingCartColumn);
+                result.construct(true, ConstUtils.MSG_ADD_SUCCESS, shoppingCartColumn);
+            }
+        }else{//userId不一致提示访问错误
+            result.construct(false, ConstUtils.MSG_SHOPPING_CART_ERROR, null);
+        }
+    }
+
+    @Override
+    public void getExpenseByTime(HttpSession session, BaseResult<List<SpuTypeExpenseResult>> result, Timestamp startTime ,Timestamp endTime) {
+        Integer userId = (Integer) session.getAttribute(ConstUtils.SESSION_USER_ID);
+        List<SpuTypeExpenseTempResult> tempData =  orderRepository.findExpenseTempByUserIdAndTime(userId, startTime, endTime);
+        // 根据商品类别进行归类
+        Map<Integer, SpuTypeExpenseResult> map = new HashMap<>();
+        for (SpuTypeExpenseTempResult temp : tempData) {
+            if (map.get(temp.getSpuTpeId()) != null) {
+                map.get(temp.getSpuTpeId()).setExpense(map.get(temp.getSpuTpeId()).getExpense() + temp.getNumber() * temp.getPrice().doubleValue());
+            } else {
+                SpuTypeExpenseResult spuTypeExpenseResult = new SpuTypeExpenseResult(temp.getSpuTpeId(), temp.getSpuTypeName(), temp.getNumber() * temp.getPrice().doubleValue());
+                map.put(temp.getSpuTpeId(), spuTypeExpenseResult);
+            }
+        }
+        List<SpuTypeExpenseResult> data = new ArrayList<>();
+        for (Map.Entry<Integer, SpuTypeExpenseResult> entry : map.entrySet()) {
+            data.add(entry.getValue());
+        }
+        result.construct(true, ConstUtils.MSG_SUCCESS, data);
+    }
+
+    @Override
+    public void getMaxOrderByTime(HttpSession session, BaseResult<MaxOrderResult> result, Timestamp startTime, Timestamp endTime) {
+        Integer userId = (Integer) session.getAttribute(ConstUtils.SESSION_USER_ID);
+        List<OrderTempResult> orderTempResultList = orderRepository.findOrderTempByUserIdAndTime(userId, startTime, endTime);
+        Map<Integer, Double> orderIdPriceMap = new HashMap<>();
+        for (OrderTempResult temp : orderTempResultList) {
+            if (orderIdPriceMap.get(temp.getOrderId()) == null) {
+                orderIdPriceMap.put(temp.getOrderId(), temp.getNumber() * temp.getPrice().doubleValue());
+            } else {
+                orderIdPriceMap.put(temp.getOrderId(), orderIdPriceMap.get(temp.getOrderId()) + temp.getNumber() * temp.getPrice().doubleValue());
+            }
+        }
+        Integer maxOrderId = 0;
+        Double maxPrice = Double.MIN_VALUE;
+        for (Integer orderId : orderIdPriceMap.keySet()) {
+            if (maxPrice < orderIdPriceMap.get(orderId)) {
+                maxOrderId = orderId;
+                maxPrice = orderIdPriceMap.get(orderId);
+            }
+        }
+        MaxOrderResult data = new MaxOrderResult(maxOrderId, maxPrice);
+        result.construct(true, ConstUtils.MSG_SUCCESS, data);
+    }
+
+    @Override
+    public void getUserInfoById(BaseResult<Object> result, HttpSession session) {
+        Integer userId = (Integer)session.getAttribute(ConstUtils.SESSION_USER_ID);
+        // 当前没有用户处于登陆状态，直接返回
+        if (userId == null) {
+            result.construct(true, ConstUtils.MSG_QUERY_FAILED, null);
+            return;
+        }
+        User user = userRepository.findUserById(userId);
+        Address address = addressRepository.findAddressByUserId(userId);
+        Province province = provinceRepository.findProvinceByProvinceId(address.getProvinceId());
+        City city = cityRepository.findCityByCityId(address.getCityId());
+        County county = countyRepository.findCountyByCountyId(address.getCountryId());
+        UserInfo userInfo =  new UserInfo();
+        userInfo.setUsername(user.getUsername());
+        userInfo.setEmail(user.getEmail());
+        userInfo.setProvinceName(province.getName());
+        userInfo.setCityName(city.getName());
+        userInfo.setCountryName(county.getName());
+        userInfo.setDetail(address.getDetail());
+        userInfo.setPhone(address.getPhone());
+        result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, userInfo);
+    }
+
+    @Override
+    public void getProvince(BaseResult<Object> result, HttpSession session) {
+        List<Province> list = provinceRepository.getProvince();
+        result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, list);
+    }
+
+    @Override
+    public void getOrderByUserId(HttpSession session, BaseResult<Object> result){
+        Integer userId = (Integer) session.getAttribute(ConstUtils.SESSION_USER_ID);
+        List<OrderSkuSpuResult> list = skuRepository.findOrderByUserId(userId);
+
+        result.construct(true, ConstUtils.MSG_SUCCESS, list);
+    }
+
+    @Override
+    public void getCity(BaseResult<Object> result, String name, HttpSession session) {
+        Province province = provinceRepository.findProvinceByName(name);
+        List<City> list = cityRepository.findCityByProvinceId(province.getProvinceId());
+        result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, list);
+
+    }
+
+    @Override
+    public void getCounty(BaseResult<Object> result, String name, HttpSession session) {
+        City city = cityRepository.findCityByName(name);
+        List<County> list = countyRepository.findCountyByCityId(city.getCityId());
+        result.construct(true, ConstUtils.MSG_QUERY_SUCCESS, list);
+    }
+}

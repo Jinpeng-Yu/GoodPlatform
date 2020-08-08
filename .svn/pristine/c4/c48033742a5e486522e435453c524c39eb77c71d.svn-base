@@ -1,0 +1,17 @@
+package com.hitwh.shop.service.impl;
+
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.service.SellerService;
+import org.springframework.stereotype.Service;
+
+/**
+ * @ClassName SellerServiceImpl
+ * @Description TODO
+ * @Author 孙一恒
+ * @Date 2020/6/1 17:23
+ * @Version 1.0
+ **/
+@Service
+public class SellerServiceImpl implements SellerService {
+
+}

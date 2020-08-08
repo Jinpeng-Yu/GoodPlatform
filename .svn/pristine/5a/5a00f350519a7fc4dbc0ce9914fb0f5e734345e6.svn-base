@@ -1,0 +1,45 @@
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+import Login from '../pages/login/Login'
+import Public from '../pages/public/Public'
+import ShowSpu from '../pages/public/ShowSpu'
+import Parent from '../components/Parent'
+import Child from '../components/Child'
+
+Vue.use(VueRouter)
+
+const routes = [
+  // 初始页面为public
+  {
+    path: '/',
+    redirect: '/public'
+  },
+  {
+    path: '/public',
+    component: Public
+  },
+  {
+    path: '/login',
+    component: Login
+  },
+  {
+    path: '/showSpu',
+    component: ShowSpu
+  },
+  // 父子组件测试用
+  {
+    path: '/parent',
+    component: Parent
+  },
+  {
+    path: '/child',
+    component: Child
+  }
+]
+
+const router = new VueRouter({
+  mode: 'history',
+  routes
+})
+
+export default router

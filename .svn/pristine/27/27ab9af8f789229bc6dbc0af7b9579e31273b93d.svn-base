@@ -1,0 +1,46 @@
+package com.hitwh.shop.dao;
+
+import com.hitwh.shop.model.entity.Order;
+import com.hitwh.shop.model.pojo.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+public interface OrderRepository extends JpaRepository<Order, Integer> {
+    @Query("select new com.hitwh.shop.model.pojo.SpuTypeExpenseTempResult(st.id, st.name, sk.price, ok.number) " +
+            "from User u, Order o, OrderSku ok, SpuType st, Spu sp, Sku sk " +
+            "where u.id = :userId and o.userId = u.id and ok.orderId = o.id and sp.spuTypeId = st.id and " +
+            "sk.spuId = sp.id and ok.skuId = sk.id and o.date > :startTime and o.date < :endTime " +
+            "and u.deleted = 0 and o.deleted = 0 and ok.deleted = 0 and st.deleted = 0 and sp.deleted = 0 and sk.deleted = 0 ")
+    List<SpuTypeExpenseTempResult> findExpenseTempByUserIdAndTime(Integer userId, Timestamp startTime, Timestamp endTime);
+
+    @Query(value = "select new com.hitwh.shop.model.pojo.OrderTempResult(o.id, ok.number, sk.price) " +
+            "from User u, Order o, OrderSku ok, Spu sp, Sku sk " +
+            "where  u.id = :userId and o.userId = u.id and ok.orderId = o.id and " +
+            "sk.spuId = sp.id and ok.skuId = sk.id and o.date > :startTime and o.date < :endTime " +
+            "and u.deleted = 0 and o.deleted = 0 and ok.deleted = 0 and sp.deleted = 0 and sk.deleted = 0 ")
+    List<OrderTempResult> findOrderTempByUserIdAndTime(Integer userId, Timestamp startTime, Timestamp endTime);
+
+    @Query(value = "select new com.hitwh.shop.model.pojo.SellerOrderResult(o.id, o.userId, o.addressId, os.number, o.state, o.date, sp.name) " +
+            "from User u, Store st, Spu sp, Sku sk, OrderSku os, Order o " +
+            "where u.id = :userId and st.userId = u.id and sp.storeId = st.id and sk.spuId = sp.id and os.skuId = sk.id and o.id = os.orderId " +
+            "and u.deleted = 0 and st.deleted = 0 and sp.deleted = 0 and sk.deleted = 0 and os.deleted = 0 and o.deleted = 0 ")
+    Page<SellerOrderResult> findSellerOrderByUserId(Pageable pageble, Integer userId);
+
+    @Query(value = "select new com.hitwh.shop.model.pojo.SellerOrderResult(o.id, o.userId, o.addressId, os.number, o.state, o.date, sp.name) " +
+            "from User u, Store st, Spu sp, Sku sk, OrderSku os, Order o " +
+            "where u.id = :userId and st.userId = u.id and sp.storeId = st.id and sk.spuId = sp.id and os.skuId = sk.id and o.id = os.orderId and o.state = :state " +
+            "and u.deleted = 0 and st.deleted = 0 and sp.deleted = 0 and sk.deleted = 0 and os.deleted = 0 and o.deleted = 0 ")
+    Page<SellerOrderResult> findSellerOrderByStateByUserId(Pageable pageble, Integer state, Integer userId);
+
+    @Query(value = "select new com.hitwh.shop.model.pojo.CitySales(c.cityId, c.name, SUM(ok.number)) " +
+            "from City c, Address a, Order o, OrderSku ok, Sku sk " +
+            "where c.cityId = a.cityId and o.addressId = a.id and ok.orderId = o.id and ok.skuId = sk.id and " +
+            "a.deleted = 0 and o.deleted = 0 and ok.deleted = 0 and sk.deleted = 0 " +
+            "group by c.name, c.cityId order by COUNT(ok.number) desc ")
+    List<CitySales> getAllCitySales();
+}

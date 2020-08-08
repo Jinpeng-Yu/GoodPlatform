@@ -1,0 +1,13 @@
+<template>
+  <span>管理员工作台</span>
+</template>
+
+<script>
+export default {
+  name: 'CityEcharts'
+}
+</script>
+
+<style scoped>
+
+</style>

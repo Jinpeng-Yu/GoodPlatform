@@ -1,0 +1,129 @@
+package com.hitwh.shop.util;
+
+import com.hitwh.shop.model.pojo.RolePermissionResult;
+
+import java.util.ArrayList;
+
+/**
+ * @ClassName ConstUtil
+ * @Description 常量工具类
+ * @Author 孙一恒
+ * @Date 2020/6/1 17:09
+ * @Version 1.0
+ **/
+public class ConstUtils {
+    public static final String SESSION_USER_ID = "userId";
+    public static final String SESSION_PERMISSION_LIST = "permissionList";
+    public static final String SESSION_CAPTCHA = "captcha";
+    public static final String SESSION_EMAIL = "email";
+    public static final String SESSION_CAPTCHAPW = "captchaPW";
+    public static final String SESSION_EMAILPW = "emailPW";
+
+    public static final String URL_PUBLIC = "/public";
+    public static final String URL_SELLER = "/seller";
+    public static final String URL_BUYER = "/buyer";
+    public static final String URL_ADMIN = "/admin";
+    public static final String URL_USER = "/user";
+    public static final String URL_TEST = "/test";
+
+    public static final String URL_SEND_VERIFY_MAIL = "/sendVerifyMail";
+    public static final String URL_SEND_VERIFY_MAIL_PW = "/sendVerifyMailPW";
+    public static final String URL_LOGOUT = "/logout";
+    public static final String URL_GETUSERINFOBYID = "/getUserInfoById";
+    public static final String URL_GETPROVINCE = "/getProvince";
+    public static final String URL_GETCITY = "/getCity";
+    public static final String URL_GETCOUNTY = "/getCounty";
+    public static final String URL_SAVEUSERINFO = "/saveUserInfo";
+    public static final String URL_REGISTER = "/register";
+    public static final String URL_FORGET = "/forget";
+    public static final String URL_LOGIN = "/login";
+    public static final String URL_SEARCH_SPU_BY_NAME = "/searchSPUByName";
+    public static final String URL_SEARCH_SPU_BY_TYPE = "/searchSPUByType";
+    public static final String URL_GET_COLLECTION = "/getCollection";
+    public static final String URL_ADD_COLLECTION = "/addCollection";
+    public static final String URL_DELETE_COLLECTION = "/deleteCollection";
+    public static final String URL_ADD_SHOPPING_CART = "/addShoppingCart";
+    public static final String URL_SHOW_SPU = "/showSPU";
+    public static final String URL_SHOW_SPU_COMMENT = "/showSPUComment";
+    public static final String URL_ADD_SPU_COMMENT = "/addSPUComment";
+    public static final String URL_SHOW_SPU_TYPE = "/showSPUType";
+    public static final String URL_SHOW_ALL_SPU = "showAllSPU";
+    public static final String URL_GET_CURRENT_MONTH_EXPENSE = "/getCurrentMonthExpense";
+    public static final String URL_GET_CURRENT_YEAR_EXPENSE = "/getCurrentYearExpense";
+    public static final String URL_GET_CURRENT_MONTH_MAX_ORDER = "/getCurrentMonthMaxOrder";
+    public static final String URL_GET_CURRENT_YEAR_MAX_ORDER = "/getCurrentYearMaxOrder";
+    public static final String URL_GET_USERROLE = "/getUserRole";
+    public static final String URL_CREATE_STORE = "/createStore";
+
+    // Merchant
+    public static final String URL_GET_COMMODITY_ITEM_LIST ="/getCommodityItemList";
+    public static final String URL_GET_ORDER_ITEM_LIST ="/getOrderItemList";
+    public static final String URL_GET_STORE_SPU_SALES = "/getStoreSPUSales";
+    public static final String URL_GET_ALL_SPUS = "/getAllSpus";
+    public static final String URL_DELETE_SPU_BY_ID = "deleteSpuById";
+    public static final String URL_GET_CATEGORIES = "getCategories";
+    public static final String URL_ADD_GOODS = "addGoods";
+    public static final String URL_GET_ALL_ORDERS = "getAllOrders";
+
+    // 验证邮件标题
+    public static final String VERIFY_MAIL_SUBJECT = "MyShopping";
+    public static final String FORGETPASSWORD_MAIL_SUBJECT = "NewPassword";
+    public static final String ERROR_500 = "服务器发生500错误，请联系后端开发人员";
+
+    public static final String MSG_SUCCESS = "成功";
+    public static final String MSG_FAILED = "失败";
+    public static final String MSG_ADD_SUCCESS = "添加成功!";
+    public static final String MSG_ADD_FAILED = "添加失败!";
+    public static final String MSG_DELETE_SUCCESS = "删除成功!";
+    public static final String MSG_DELETE_FAILED = "删除失败!";
+
+    public static final String MSG_CANCEL_SUCCESS = "取消成功!";
+    public static final String MSG_GET_SUCCESS = "获取成功!";
+    public static final String MSG_UPDATE_SUCCESS = "更新成功";
+    public static final String MSG_UPDATE_FAILED = "更新失败";
+    public static final String MSG_NO_PERMISSION = "无访问权限";
+    public static final String MSG_QUERY_SUCCESS = "查询成功";
+    public static final String MSG_QUERY_FAILED = "查询失败";
+    public static final String MSG_LOGIN_SUCCESS = "登陆成功!";
+    public static final String MSG_LOGIN_FAILED = "登陆失败，请检查用户名和密码";
+    public static final String MSG_LOGOUT_SUCCESS = "登出成功!";
+    public static final String MSG_ILLEGAL_IMGAGE = "图片非法，请检查图片格式!";
+    public static final String MSG_SEND_SUCCESS = "邮件发送成功";
+    public static final String MSG_SEND_FAILED = "邮件发送失败";
+    public static final String MSG_USED_EMAIL = "该邮箱已经被占用";
+    public static final String MSG_UNREGISTERED_EMAIL = "该邮箱未注册";
+    public static final String MSG_NO_CAPTCHA = "请先获取验证邮件";
+    public static final String MSG_WRONG_CAPTCHA = "验证码错误";
+    public static final String MSG_WRONG_EMAIL = "邮箱与获取验证码邮箱不一致";
+    public static final String MSG_DUPLICATE_USERNAME = "用户名已被注册，请更换用户名";
+    public static final String MSG_REGISTER_SUCCESS = "注册成功";
+    public static final String MSG_NOT_REGISTERED_EMAIL = "该邮箱尚未被注册";
+    public static final String MSG_CHANGE_PASSWORD_SUCCESS = "修改密码成功";
+    public static final String MSG_USER_BE_BANNED = "您已被禁言，发表失败!";
+    public static final String MSG_CONTATINS_SENSITIVE = "发布失败,包含敏感词汇:";
+    public static final String MSG_SPU_NOT_EXIST = "商品不存在!";
+    public static final String MSG_USER_NOT_EXIST = "用户不存在!";
+    public static final String MSG_PRIVATE_BLOG_ARTICLE = "私有的博客，无权访问";
+    public static final String MSG_DUPLICATE_FOLLOW = "已有关注,无法重复添加";
+    public static final String MSG_NO_FOLLOW = "没有关注,无法取消";
+    public static final String MSG_DUPLICATE_AGREEMENT_IS_NOT_ALLOWED = "不要重复点赞哦";
+    public static final String MSG_GIVE_AGREEMETN_SUCCESS = "点赞成功";
+    public static final String MSG_GIVE_DISAGREEMETN_SUCCESS = "点踩成功";
+    public static final String MSG_DUPLICATE_DISAGREEMENT_IS_NOT_ALLOWED = "不要重复点踩哦";
+    public static final String MSG_ERROR_CHOOSE = "错误的选择";
+    public static final String MSG_INPUT_NULL = "输入为空！";
+    public static final String MSG_SEARCH_SPU_NULL = "找不到相关商品！";
+    public static final String MSG_SEARCH_SPU_ATTRIBUTE_TYPE_NULL = "找不到相关商品的属性类型！";
+    public static final String MSG_SEARCH_SKU_NULL = "找不到相关商品的单品！";
+    public static final String MSG_SEARCH_ATTRIBUTE_NULL = "找不到该属性类型的属性！";
+    public static final String MSG_COLLECTION_ERROR = "访问了错误的收藏夹！";
+    public static final String MSG_SHOPPING_CART_ERROR = "访问了错误的购物车！";
+    public static final String MSG_COLLECTION_NULL = "收藏夹为空！";
+    public static final String MSG_SPU_COMMENT_NULL = "该商品评论为空！";
+    public static final String MSG_SPU_TYPE_NULL = "找不到任何商品类型！";
+    public static final String MSG_ORDER_NULL = "你未购买过这个商品！";
+
+    public static final Integer ROLE_BUYER_ID = 1;
+
+    public static final ArrayList<RolePermissionResult> ROLE_VISITOR = new ArrayList<RolePermissionResult>(){{add(new RolePermissionResult(1, URL_PUBLIC));}};
+}

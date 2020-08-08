@@ -1,0 +1,15 @@
+package com.hitwh.shop.dao;
+
+import com.hitwh.shop.model.entity.OrderSku;
+import com.hitwh.shop.model.pojo.OrderTempResult;
+import com.hitwh.shop.model.pojo.SellerOrderResult;
+import com.hitwh.shop.model.pojo.SpuTypeExpenseResult;
+import com.hitwh.shop.model.pojo.SpuTypeExpenseTempResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+
+public interface OrderSkuRepository extends JpaRepository<OrderSku, Integer>{
+}

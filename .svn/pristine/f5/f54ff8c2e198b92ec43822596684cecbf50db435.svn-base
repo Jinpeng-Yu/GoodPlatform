@@ -1,0 +1,23 @@
+package com.hitwh.shop.service;
+
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.model.pojo.MaxOrderResult;
+import com.hitwh.shop.model.pojo.SpuTypeExpenseResult;
+
+import javax.servlet.http.HttpSession;
+import java.sql.Timestamp;
+import java.util.List;
+
+public interface BuyerService {
+    public void getCollection(BaseResult result, Integer userId, HttpSession session);
+
+    public void addCollection(BaseResult<Object> result, Integer userId, Integer spuId, HttpSession session);
+
+    public void deleteCollection(BaseResult<Object> result, Integer userId, Integer spuId, HttpSession session);
+
+    public void getExpenseByTime(HttpSession session, BaseResult<List<SpuTypeExpenseResult>> result, Timestamp startTime , Timestamp endTime);
+
+    public void getMaxOrderByTime(HttpSession session, BaseResult<MaxOrderResult> result, Timestamp startTime, Timestamp endTime);
+
+    public void addShoppingCart(BaseResult<Object> result, Integer userId, Integer spuId, Integer number, HttpSession session);
+}

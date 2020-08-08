@@ -1,0 +1,212 @@
+<template>
+  <el-container class="home-container">
+    <!--  头部区域  -->
+    <el-header>
+      <Head @Name="getSpuByName" v-show="!isLogged"></Head>
+      <BuyerHead @Name="getSpuByName" v-show="isLogged"></BuyerHead>
+    </el-header>
+    <!--    页面主体区域-->
+    <el-container>
+      <!--      侧边栏-->
+      <el-aside width="200px">
+        <!-- 侧边栏菜单区域 -->
+        <Navigation @Type="getSpuByType"></Navigation>
+      </el-aside>
+      <!--      显示区域-->
+      <el-main>
+        <el-row  v-show="showCarousel">
+          <el-carousel :interval="4000" type="card" height="250px">
+            <el-carousel-item v-for="(img,index) in carouselImg" :key="index">
+              <el-row>
+                <el-image v-bind:src="img" :fit="fill"></el-image>
+              </el-row>
+            </el-carousel-item>
+          </el-carousel>
+        </el-row>
+        <el-row v-for="(page, index) of pages" :key="index" style="margin-top: 10px">
+          <el-col :span="4" v-for="(spu, innerindex) of page" :key="innerindex">
+            <el-card :body-style="{ padding: '0px' }" shadow="hover" style="width: 180px">
+              <el-image v-bind:src="'http://' + spu.img" style="width: 180px; height: 150px" :fit="fill"></el-image>
+              <div style="padding: 14px;">
+                <h2>{{spu.name}}</h2>
+                <div class="bottom clearfix">
+                  <p style="font-size: 10px;">上架日期：</p>
+                  <time class="time">{{ spu.date | dateFormat}}</time>
+                  <el-button type="text" class="button" @click="showSpu(spu.id)">查看详情</el-button>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+        <el-row type="flex" justify="center" v-show="showPagination">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="currentPage"
+            :page-sizes="[6,12,18,24]"
+            :page-size="pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total">
+          </el-pagination>
+        </el-row>
+      </el-main>
+    </el-container>
+  </el-container>
+</template>
+
+<script>
+import Navigation from '../../components/Navigation'
+import Head from '../../components/Head'
+import BuyerHead from '../../components/buyer/BuyerHead'
+
+export default {
+  components: { Navigation, Head, BuyerHead },
+  // 定义的一些参数
+  data () {
+    return {
+      inputGoodName: '',
+      total: 0,
+      currentPage: 1,
+      type: '',
+      pageSize: 18,
+      allSpuList: [],
+      spuListByType: [],
+      spuTypeList: [],
+      showCarousel: true,
+      showPagination: true,
+      isLogged: false,
+      userId: window.sessionStorage.getItem('userId'),
+      carouselImg: [
+        '/img/a1.jpg',
+        '/img/a2.jpg',
+        '/img/a3.jpg',
+        '/img/a4.jpg'
+      ]
+    }
+  },
+  // 页面创建时调用的方法
+  created () {
+    this.getAllSPUList()
+    this.getLog()
+  },
+  // 计算分页
+  computed: {
+    pages () {
+      const pages = []
+      this.allSpuList.forEach((item, index) => {
+        const page = Math.floor(index / 6)// 6代表6条为一行，随意更改
+        if (!pages[page]) {
+          pages[page] = []
+        }
+        pages[page].push(item)
+      })
+      return pages
+    }
+  },
+  methods: {
+    getLog () {
+      if (this.userId !== null) {
+        this.isLogged = true
+      } else {
+        this.isLogged = false
+      }
+    },
+    handleCurrentChange (val) {
+      this.currentPage = val
+      this.getAllSPUList()
+    },
+    handleSizeChange (val) {
+      this.pageSize = val
+      this.currentPage = 1
+      this.getAllSPUList()
+    },
+    getAllSPUList () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showAllSPU',
+        // params: this.queryAllSPU
+        params: { pageNo: this.currentPage - 1, pageSize: this.pageSize }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.allSpuList = response.data.content
+        this.total = response.data.totalElement
+        // console.log(response.data.success)
+      })
+    },
+    getSpuByType ({ allSpuList }) {
+      this.showCarousel = false
+      this.showPagination = false
+      this.allSpuList = allSpuList
+    },
+    getSpuByName ({ allSpuList }) {
+      this.showCarousel = false
+      this.showPagination = false
+      this.allSpuList = allSpuList
+    },
+    showSpu (spuId) {
+      this.$router.push({
+        path: '/showSpu',
+        query: {
+          spuId: spuId
+        }
+      })
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+  .el-header {
+    background-color: #373d41;
+  }
+
+  .el-aside {
+    background-color: #333744;
+  }
+
+  .el-main {
+    background-color: #eaedf1;
+  }
+
+  .home-container {
+    height: 100%;
+    font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+  }
+
+  // 下列为属于el-card的一些样式
+  .time {
+    font-size: 13px;
+    color: #999;
+  }
+
+  .bottom {
+    margin-top: 13px;
+    line-height: 12px;
+  }
+
+  .button {
+    padding: 0;
+    float: right;
+  }
+
+  .image {
+    width: 100%;
+    display: block;
+  }
+
+  .clearfix:before,
+  .clearfix:after {
+    display: table;
+    content: "";
+  }
+
+  .clearfix:after {
+    clear: both
+  }
+
+  // 走马灯样式
+  .el-carousel__item {
+  }
+</style>

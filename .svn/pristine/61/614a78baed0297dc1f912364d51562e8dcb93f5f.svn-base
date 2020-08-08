@@ -1,0 +1,321 @@
+<template>
+  <div>
+    <!--    面包屑导航区-->
+    <el-breadcrumb separator-class="el-icon-arrow-right">
+      <el-breadcrumb-item :to="{ path: '/merchanthome' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>商品管理</el-breadcrumb-item>
+      <el-breadcrumb-item>添加商品</el-breadcrumb-item>
+    </el-breadcrumb>
+
+<!--    卡片试图-->
+    <el-card>
+<!--      提示区域-->
+      <el-alert
+        title="添加商品信息"
+        type="info"
+        center
+        show-icon
+        :closable="false">
+      </el-alert>
+<!--      步骤条-->
+      <el-steps :space="200" :active="activateIndex - 0" finish-status="success" align-center>
+        <el-step title="基本信息"></el-step>
+        <el-step title="商品参数"></el-step>
+<!--        <el-step title="商品属性"></el-step>-->
+        <el-step title="商品图片"></el-step>
+        <el-step title="商品内容"></el-step>
+        <el-step title="完成"></el-step>
+      </el-steps>
+      <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px" label-position="top">
+        <!--      Tab栏区域-->
+        <el-tabs :tab-position="'left'" v-model="activateIndex" :before-leave="beforeTabLeave" @tab-click="tabClicked">
+          <el-tab-pane label="基本信息" name="0">
+            <el-form-item label="商品名称" prop="goodsName">
+              <el-input v-model="addForm.goodsName"></el-input>
+            </el-form-item>
+            <el-form-item label="商品价格" prop="goodsPrice">
+              <el-input v-model="addForm.goodsPrice" type="number"></el-input>
+            </el-form-item>
+            <el-form-item label="商品数量" prop="goodsNumber" type="number">
+              <el-input v-model="addForm.goodsNumber"></el-input>
+            </el-form-item>
+            <el-form-item label="商品分类" prop="goodsCat">
+              <el-select v-model="addForm.goodsCat" placeholder="请选择" clearable filterable>
+                <el-option
+                  v-for="item in catelist"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="商品参数" name="1">
+            <template>
+              <el-form :model="dynamicAttributeForm" ref="dynamicAttributeFormRef"  label-width="100px" label-position="top">
+                <el-form-item
+                  prop="attribute"
+                  label="自定义属性"
+                  :rules="{ required: true, message: '请输入自定义属性', trigger: 'blur' }">
+                  <el-input v-model="dynamicAttributeForm.attribute"></el-input>
+                </el-form-item>
+                <el-form-item
+                  v-for="(domain, index) in dynamicAttributeForm.domains"
+                  :label="'属性值' + index"
+                  :key="domain.key"
+                  :prop="'domains.' + index + '.value'"
+                  :rules="{ required: true, message: '属性值不能为空', trigger: 'blur' }">
+                  <el-input v-model="domain.value"></el-input>
+                  <el-button @click.prevent="removeDomain(domain)">删除</el-button>
+                </el-form-item>
+                <el-form-item>
+                  <el-button @click="addDomain">新增属性值</el-button>
+                  <el-button @click="resetForm('dynamicAttributeForm')">重置</el-button>
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-tab-pane>
+<!--          <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>-->
+          <el-tab-pane label="商品图片" name="2">
+<!--            action标识图片上传地址-->
+            <el-upload
+              class="upload-demo"
+              action="http://101.201.197.212:8989/image/picUpload"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              :on-success="handleSuccess"
+              list-type="picture">
+              <el-button size="small" type="primary">点击上传</el-button>
+<!--              <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>-->
+            </el-upload>
+          </el-tab-pane>
+          <el-tab-pane label="商品内容" name="3">
+<!--            富文本编辑器组件-->
+            <quill-editor v-model="addForm.goodsIntroduce"></quill-editor>
+            <el-button type="primary" class="btnAdd" @click="addGoods">添加商品</el-button>
+          </el-tab-pane>
+        </el-tabs>
+      </el-form>
+    </el-card>
+
+<!--    图片预览-->
+    <el-dialog
+      title="图片预览"
+      :visible.sync="previewVisible"
+      width="50%">
+      <img :src="previewPath" alt="" class="previewImg">
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      activateIndex: '0',
+      // 添加商品的表单对象
+      addForm: {
+        goodsName: '',
+        goodsPrice: 0,
+        goodsNumber: 0,
+        // 商品所属分类
+        goodsCat: '',
+        // 图片数组
+        // pics: [],
+        // 图片路径
+        picture: '',
+        // 商品的详情描述
+        goodsIntroduce: '',
+        attrName: '',
+        attrValues: []
+      },
+      addFormRules: {
+        goodsName: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' }
+        ],
+        goodsPrice: [
+          { required: true, message: '请输入商品价格', trigger: 'blur' }
+        ],
+        goodsNumber: [
+          { required: true, message: '请输入商品数量', trigger: 'blur' }
+        ],
+        goodsCat: [
+          { required: true, message: '请选择商品分类', trigger: 'blur' }
+        ]
+      },
+      // 一级分类选择器
+      catelist: [],
+      // 商品参数
+      dynamicAttributeForm: {
+        domains: [{
+          value: ''
+        }],
+        attribute: ''
+      },
+      previewPath: '',
+      previewVisible: false
+    }
+  },
+  created () {
+    this.getCateList()
+  },
+  methods: {
+    // 获取商品分类数据
+    getCateList () {
+      this.$axios({
+        method: 'post',
+        url: 'myshopping/seller/getCategories'
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取商品分类列表失败！')
+        } else {
+          this.catelist = response.data.data
+        }
+      })
+    },
+
+    beforeTabLeave (activeName, oldActiveName) {
+      if (oldActiveName === '0' && this.addForm.goodsCat === '') {
+        this.$message.error('请先选择商品分类！')
+        return false
+      }
+      // console.log(this.addForm.goodsCat)
+    },
+
+    tabClicked () {
+      // 动态参数面板
+      if (this.activateIndex === '1') {
+
+      }
+    },
+
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
+    },
+    removeDomain (item) {
+      var index = this.dynamicAttributeForm.domains.indexOf(item)
+      if (index !== -1) {
+        this.dynamicAttributeForm.domains.splice(index, 1)
+      }
+    },
+    addDomain () {
+      this.dynamicAttributeForm.domains.push({
+        value: '',
+        key: Date.now()
+      })
+    },
+    // 处理图片预览效果
+    handlePreview (file) {
+      // console.log(file)
+      this.previewPath = 'http://' + file.response.data
+      this.previewVisible = true
+    },
+    handleRemove (file) {
+      // console.log(file)
+      // 获取临时路径
+      const filePath = file.response.data
+      // 从pics中找到图片索引值
+      const i = this.addForm.pics.findIndex(x =>
+        x.pic === filePath)
+      // 调用splice方法
+      this.addForm.pics.splice(i, 1)
+      // console.log(this.addForm)
+    },
+    handleSuccess (response) {
+      // console.log(response)
+      // 拼接一个图片信息对象
+      // const picInfo = { pic: response.data }
+      // 将图片信息对象push到pics数组中
+      // this.addForm.pics.push(picInfo)
+
+      // 单个路径
+      this.addForm.picture = response.data
+      // console.log(this.addForm)
+    },
+
+    // 添加商品
+    addGoods () {
+      var isAddFormFilled = true
+      var isAttributeFormFilled = true
+      this.$refs.addFormRef.validate(valid => {
+        if (!valid) {
+          // 判断基本信息是否填写完整
+          isAddFormFilled = false
+        }
+      })
+      this.$refs.dynamicAttributeFormRef.validate(valid => {
+        if (!valid) {
+          // 判断属性是否填写完整
+          isAttributeFormFilled = false
+        }
+      })
+      if (isAddFormFilled && isAttributeFormFilled) {
+        // 执行业务逻辑
+        // console.log(this.addForm)
+        // console.log(this.dynamicAttributeForm)
+
+        // 处理静态参数
+        this.addForm.attrName = this.dynamicAttributeForm.attribute
+        // 处理动态参数表
+        this.dynamicAttributeForm.domains.forEach(item => {
+          // const newInfo = {
+          //   attrValue: item.value
+          // }
+          this.addForm.attrValues.push(item.value)
+        })
+        console.log(this.addForm)
+
+        this.$axios({
+          method: 'post',
+          url: 'myshopping/seller/addGoods',
+          data: JSON.stringify(this.addForm),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(response => {
+          if (response.status !== 200) {
+            return this.$message.error('添加商品失败！')
+          } else {
+            this.$message.success('添加商品成功！')
+            this.$router.push('/goods')
+          }
+        })
+      } else {
+        this.$message.error('请填写必要的表单项！')
+      }
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+  .el-card {
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 15px;
+  }
+
+  .el-table {
+    margin-top: 15px;
+    font-size: 12px;
+  }
+
+  .el-pagination {
+    margin-top: 15px;
+  }
+
+  .el-steps {
+    margin: 15px 0;
+  }
+
+  .el-step__title {
+    font-size: 12px;
+  }
+
+  .previewImg {
+    width: 100%;
+  }
+
+  .btnAdd {
+    margin-top: 15px;
+  }
+</style>

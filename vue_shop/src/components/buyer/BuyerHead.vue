@@ -1,0 +1,82 @@
+<template>
+  <el-container class="home-container">
+    <span>商品平台</span>
+    <div>
+      <el-input placeholder="请输入商品名称" v-model="inputGoodName" @input="change($event)" clearable></el-input>
+      <el-button type="primary" icon="el-icon-search" @click="getSpuByName()">搜索</el-button>
+    </div>
+    <el-button type="primary" plain @click="backHome">首页</el-button>
+    <el-button type="primary" plain @click="buyerHome">个人主页</el-button>
+    <el-button type="primary" plain @click="logout">退出</el-button>
+  </el-container>
+</template>
+
+<script>
+export default {
+  name: 'BuyerNavBar',
+  inject: ['reload'],
+  data () {
+    return {
+      allSpuList: [],
+      currentPage: 1,
+      pageSize: 18
+    }
+  },
+  methods: {
+    // 退出登录
+    logout () {
+      window.sessionStorage.removeItem('userId')
+      this.$router.go('/public')
+    },
+    getSpuByName () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/searchSPUByName',
+        params: { pageNo: this.currentPage - 1, pageSize: this.pageSize, goodName: this.inputGoodName }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.allSpuList = response.data.content
+        // 向父组件传递数据
+        this.$emit('Name', { allSpuList: this.allSpuList })
+      })
+    },
+    buyerHome () {
+      this.$router.push('/buyerhome')
+    },
+    // 一个关于el-input奇怪的坑,不清楚原理，不用细究
+    change (e) {
+      this.$forceUpdate()
+    },
+    // 返回首页
+    backHome () {
+      this.$router.go(0)
+      // window.location.reload()
+    }
+  }
+}
+</script>
+
+<style lang = "less" scoped>
+  .home-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding-left: 0;
+    align-items: center;
+
+  > div {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  > span {
+    margin-left: 15px;
+    color: white;
+  }
+  }
+</style>

@@ -1,0 +1,34 @@
+package com.hitwh.shop.service;
+
+
+import com.hitwh.shop.model.pojo.BasePageResult;
+import com.hitwh.shop.model.pojo.BaseResult;
+import com.hitwh.shop.model.pojo.LoginResult;
+import com.hitwh.shop.model.pojo.SPUResultForBuyer;
+import org.springframework.data.domain.Pageable;
+
+import javax.servlet.http.HttpSession;
+
+public interface PublicService {
+    public void sendVerifyMail(BaseResult<Object> result, String email, HttpSession session);
+
+    public void register(BaseResult<Object> result, String username, String email, String password, String captcha, HttpSession session);
+
+    public void login(BaseResult<LoginResult> result, String userName, String password, HttpSession session);
+
+    public void searchSPUByName(BasePageResult result, String goodName, Pageable pageable);
+
+    public void searchSPUByType(BasePageResult result, String goodType, Pageable pageable);
+
+    public void showSPU(BaseResult<SPUResultForBuyer> result, Integer spuId);
+
+    public void showSpuComment(BaseResult<Object> result, Integer spuId);
+
+    public void showSPUType(BaseResult<Object> result);
+
+    public void showAllSPU(BasePageResult<Object> result, Pageable pageable);
+
+    public void forget(BaseResult<Object> result, String email, String captcha, HttpSession session);
+
+    public void sendVerifyMailPW(BaseResult<Object> result, String email, HttpSession session);
+}

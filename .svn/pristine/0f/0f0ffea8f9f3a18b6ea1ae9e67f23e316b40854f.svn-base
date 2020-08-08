@@ -1,0 +1,131 @@
+<template>
+  <el-container class="home-container">
+    <!--  头部区域  -->
+    <el-header>
+      <Head @Name="getSpuByName"></Head>
+    </el-header>
+    <!--    页面主体区域-->
+    <el-container>
+      <!--      侧边栏-->
+      <el-aside width="200px">
+        <!-- 侧边栏菜单区域 -->
+        <Navigation @Type="getSpuByType"></Navigation>
+      </el-aside>
+      <!--      显示区域-->
+      <el-main>
+        <el-row>
+          <el-col :span="5" v-for="(spu,index) in allSpuList" :key="index">
+            <el-card :body-style="{ padding: '0px' }" shadow="hover" style="width: 300px">
+              <el-image v-bind:src=spu.img style="width: 300px; height: 250px" :fit="fill"></el-image>
+              <div style="padding: 14px;">
+                <h1>{{spu.name}}</h1>
+                <div>{{spu.description}}</div>
+                <div class="bottom clearfix">
+                  <time class="time">{{ spu.date | dateFormat}}</time>
+                  <el-button type="text" class="button">查看详情</el-button>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+      </el-main>
+    </el-container>
+  </el-container>
+</template>
+
+<script>
+import Navigation from '../../components/Navigation'
+import Head from '../../components/Head'
+
+export default {
+  components: { Navigation, Head },
+  // 定义的一些参数
+  data () {
+    return {
+      inputGoodName: '',
+      type: '',
+      queryAllSPU: {
+        pageNo: 0,
+        pageSize: 5
+      },
+      allSpuList: [],
+      spuListByType: [],
+      spuTypeList: []
+    }
+  },
+  // 页面创建时调用的方法
+  created () {
+    this.getAllSPUList()
+  },
+  methods: {
+    getAllSPUList () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showAllSPU',
+        params: this.queryAllSPU
+        // 另一种方法 params: { pageNo: 0, pageSize: 5}
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.allSpuList = response.data.content
+        // console.log(response.data.success)
+      })
+    },
+    getSpuByType ({ allSpuList }) {
+      this.allSpuList = allSpuList
+    },
+    getSpuByName ({ allSpuList }) {
+      this.allSpuList = allSpuList
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+  .el-header {
+    background-color: #373d41;
+  }
+  .el-aside {
+    background-color: #333744;
+  }
+
+  .el-main {
+    background-color: #eaedf1;
+  }
+
+  .home-container {
+    height: 100%;
+  }
+
+  // 下列为属于el-card的一些样式
+  .time {
+    font-size: 13px;
+    color: #999;
+  }
+
+  .bottom {
+    margin-top: 13px;
+    line-height: 12px;
+  }
+
+  .button {
+    padding: 0;
+    float: right;
+  }
+
+  .image {
+    width: 100%;
+    display: block;
+  }
+
+  .clearfix:before,
+  .clearfix:after {
+    display: table;
+    content: "";
+  }
+
+  .clearfix:after {
+    clear: both
+  }
+</style>

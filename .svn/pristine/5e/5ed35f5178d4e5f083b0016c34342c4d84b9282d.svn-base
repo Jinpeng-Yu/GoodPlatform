@@ -1,0 +1,34 @@
+package com.hitwh.shop.dao;
+
+import com.hitwh.shop.model.entity.User;
+import com.hitwh.shop.model.pojo.SpuSalesResult;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+
+/**
+ * @ClassName RoleRepository
+ * @Description TODO
+ * @Author 孙一恒
+ * @Date 2019/6/16 11:57
+ * @Version 1.0
+ **/
+
+public interface UserRepository extends JpaRepository<User, Integer> {
+    List<User> findUsersByDeleted(int deleted);
+
+    User findUserByEmail(String email);
+
+    User findUserById(Integer id);
+
+    User findUserByUsername(String username);
+
+    User findUserByUsernameAndPassword(String username, String password);
+
+    @Query(value = "select new com.hitwh.shop.model.pojo.SpuSalesResult(sp.id, sp.name, SUM(ok.number)) from User u, Spu sp, Order o, Store s, Sku sk, OrderSku ok" +
+            " where u.id = :userId and s.userId = u.id and sp.storeId = s.id and sk.spuId = sp.id and ok.skuId = sk.id and ok.orderId = o.id " +
+            "and u.deleted = 0 and sp.deleted = 0 and o.deleted = 0 and s.deleted = 0 and sk.deleted = 0 and ok.deleted = 0" +
+            "group by sp.id")
+    List<SpuSalesResult> getSpuSalesByUserId(Integer userId);
+}

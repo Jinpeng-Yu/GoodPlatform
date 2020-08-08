@@ -1,0 +1,230 @@
+<template>
+  <el-container class="home-container">
+    <!--  头部区域  -->
+    <el-header>
+      <Head @Name="getSpuByName"></Head>
+    </el-header>
+    <!--    页面主体区域-->
+    <el-container>
+      <el-aside width="200px">
+      <!--      侧边栏-->
+      <el-row class="tac">
+        <el-col :span="24">
+          <el-menu
+            default-active="1"
+            class="el-menu-vertical-demo"
+            background-color="#333744"
+            text-color="#fff"
+            active-text-color="#ffd04b"
+            unique-opened
+            router>
+            <el-submenu index="1">
+              <template slot="title">
+                <i class="el-icon-message"></i>
+                <span>商品管理</span>
+              </template>
+              <el-menu-item-group>
+                <template slot="title"></template>
+                <el-menu-item index="/SPUmanage">商品管理</el-menu-item>
+                <el-menu-item index="/agencySet">商品情况分析</el-menu-item>
+              </el-menu-item-group>
+            </el-submenu>
+            <el-submenu index="2">
+              <template slot="title">
+                <i class="el-icon-menu"></i>
+                <span>用户管理</span>
+              </template>
+              <el-menu-item-group>
+                <template slot="title"></template>
+                <el-menu-item index="/UserManage">用户管理</el-menu-item>
+              </el-menu-item-group>
+            </el-submenu>
+          </el-menu>
+        </el-col>
+      </el-row>
+      </el-aside>
+      <!--      显示区域-->
+      <el-main>
+        <el-row type="flex" class="row-bg">
+          <el-col :span="8">
+            <el-image v-bind:src="'http://' + img" style="width: 300px; height: 250px" :fit="fill"></el-image>
+          </el-col>
+          <el-col :span="12">
+            <h2>{{name}}</h2>
+            <span>
+              <div v-html="description"></div>
+            </span>
+            <el-divider></el-divider>
+            <el-row>
+              <el-col :span="12">
+                <el-button type="primary" plain @click="deleteSPU">删除</el-button>
+              </el-col>
+              <el-col :span="12">
+                <el-button type="primary" plain @click="remind">提醒店主</el-button>
+              </el-col>
+            </el-row>
+            <el-row >
+              <span>店铺：</span>
+              <span :underline="false" type="primary" >{{storeName}}</span>
+            </el-row>
+          </el-col>
+        </el-row>
+        <el-row>
+          <h2>商品评论</h2>
+        </el-row>
+        <el-row v-for="(comment,index) in commentList" :key="index">
+          <el-divider></el-divider>
+          <el-row type="flex" class="row-bg">
+            <el-col :span="4">
+              <el-image v-bind:src=comment.headImg style="width: 30px; height: 25px" :fit="fill"></el-image>
+              <span>{{comment.username}}</span>
+            </el-col>
+            <el-col :span="8">
+              <el-rate
+                v-model="comment.grade"
+                disabled
+                show-score
+                text-color="#ff9900"
+                score-template="{value}">
+              </el-rate>
+              <time class="time">{{ comment.date| dateFormat}}</time>
+              <p>{{comment.content}}</p>
+            </el-col>
+            <el-col :span="4">
+              <el-tag v-for="(attribute, key) in comment.attribute"
+                      :key="key"
+                      type=''
+                      effect="plain">
+                {{key}}:{{attribute}}
+              </el-tag>
+            </el-col>
+          </el-row>
+        </el-row>
+      </el-main>
+    </el-container>
+  </el-container>
+</template>
+
+<script>
+
+import Head from '../../../components/Head'
+
+export default {
+  components: { Head },
+  name: 'ShowSpu',
+  data () {
+    return {
+      spuId: this.$router.history.current.query.spuId,
+      img: '',
+      name: '',
+      description: '',
+      storeName: '',
+      radioList: [],
+      price: 0,
+      attributeList: [],
+      commentList: [],
+      skuList: [],
+      attributeMap: {},
+      map: {},
+      stock: 0
+    }
+  },
+  created () {
+    this.getSpu()
+    this.getCommentList()
+  },
+  methods: {
+    getSpu () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showSPU',
+        params: { spuId: this.spuId }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.img = response.data.data.img
+        this.name = response.data.data.name
+        this.description = response.data.data.description
+        this.storeName = response.data.data.storeDescription
+        this.attributeList = response.data.data.attributeList
+        this.skuList = response.data.data.skuResultList
+        // 获取radio的列表
+        var list = []
+        for (var key in this.attributeList) {
+          list = this.attributeList[key]
+          this.radioList.push(list[0].name)
+          this.attributeMap[key] = list[0].name
+        }
+        // this.getPriceAndStock()
+      })
+    },
+    deleteSPU () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/admin/deleteSPU',
+        params: { spuId: this.spuId }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.$message.success('成功！')
+      })
+    },
+    remind () {
+      this.$message.success('成功')
+    },
+    attributeUpdate (attributeType, attribute) {
+      this.attributeMap[attributeType] = attribute
+      this.$message.success('成功')
+    },
+    getCommentList () {
+      this.$axios({
+        methods: 'get',
+        url: 'myshopping/public/showSPUComment',
+        params: { spuId: this.spuId }
+      }).then(response => {
+        if (response.status !== 200) {
+          return this.$message.error('获取列表失败！')
+        }
+        this.commentList = response.data.data
+      })
+    },
+    // 获取sku中的skuAttribute键值对，进行比对后确定当前sku价格
+    getPriceAndStock () {
+    }
+  }
+}
+</script>
+
+<style lang="less" scoped>
+  .el-header {
+    background-color: #373d41;
+  }
+
+  .el-aside {
+    background-color: #333744;
+  }
+
+  .el-main {
+    background-color: #eaedf1;
+    display: flow;
+  }
+
+  .home-container {
+    height: 100%;
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  }
+
+  .el-row {
+    margin-bottom: 10px;
+
+    &:first-child {
+      margin-bottom: 20px;
+    }
+  }
+
+  .row-bg {
+    padding: 10px 0;
+  }
+</style>
